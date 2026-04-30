@@ -1,0 +1,2101 @@
+{
+  "updatedAt": "2026-04-30T13:28:35.699Z",
+  "createdAt": "2026-03-17T13:07:44.337Z",
+  "id": "6ustjVFZqByj2Pur",
+  "name": "dados para supabase",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        384,
+        752
+      ],
+      "id": "f3fe7934-a179-495a-b049-bdce38c38426",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "fileName",
+                "value": "={{ $json.nome_arquivo }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1920,
+        1312
+      ],
+      "id": "2b5fcf6d-43c4-452f-9f08-97dca906bde9",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e7221ab1-1f08-4550-94b0-d04f7c2828c0",
+      "name": "When chat message received",
+      "webhookId": "97413400-a34e-401d-a8b8-6cc832e5af06"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "retorne os dados que forem encontrados dentro desse vetor",
+        "tableName": {
+          "__rl": true,
+          "value": "pcs_escritas_projetos_spe",
+          "mode": "list",
+          "cachedResultName": "pcs_escritas_projetos_spe"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        176
+      ],
+      "id": "f9854739-d159-4c15-8c2f-b35a046009cd",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "cb2uMVlkgCkdxLxh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        336
+      ],
+      "id": "922e26c3-532a-4dd2-863e-31d921b85236",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pega o texto extraído do PDF\nlet texto = $json[\"text\"];\nlet nome = $('Download file').first().json.name\n// Remove linhas inúteis\ntexto = texto\n  .split('\\n')\n  .filter(linha => \n    linha.trim() !== '' && \n    !linha.includes('ReportLab') && \n    !linha.includes('anonymous') && \n    !linha.includes('unspecified') && \n    !linha.match(/D:\\d+/) && \n    !linha.match(/^\\d+\\.\\d+/)\n  )\n  .join('\\n');\n\n// Retorna o texto limpo\nreturn [{ texto_limpo: texto, nome_arquivo: nome  }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        752
+      ],
+      "id": "6ca021a3-2599-4086-9339-531e08441ac2",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        128,
+        208
+      ],
+      "id": "85932da2-af69-4f0a-97e6-742289333908",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Leia o banco para responder todas as perguntas"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "7813ce3a-405d-4cf1-a277-7abdc4acf1aa",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        208
+      ],
+      "id": "c59672e2-2255-4879-a6de-47dafc141698",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pega o texto extraído do PDF\nlet texto = $json[\"text\"];\nlet nome = $('Download file1').first().json.name\n// Remove linhas inúteis\ntexto = texto\n  .split('\\n')\n  .filter(linha => \n    linha.trim() !== '' && \n    !linha.includes('ReportLab') && \n    !linha.includes('anonymous') && \n    !linha.includes('unspecified') && \n    !linha.match(/D:\\d+/) && \n    !linha.match(/^\\d+\\.\\d+/)\n  )\n  .join('\\n');\n\n// Retorna o texto limpo\nreturn [{ texto_limpo: texto, nome_arquivo: nome  }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        640
+      ],
+      "id": "78dcaf3a-0a6b-4bfa-a103-9e6fc62c45ed",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        816
+      ],
+      "id": "7256ce6f-f646-416c-97e6-649fe553643b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1XlZ15eR71SqPo41tL3ZGNhqt5QDRI2HW",
+          "mode": "list",
+          "cachedResultName": "MQ_EXE_ITED_SPE_PLCO.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1XlZ15eR71SqPo41tL3ZGNhqt5QDRI2HW/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1008,
+        208
+      ],
+      "id": "41906bd8-99a0-4f91-a3f9-3a57fb8ecca7",
+      "name": "Download file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ui1vMcnDNPq58quk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Transcreva o seguinte arquivo para a notação de mark down (.md) mantendo exatamente a sua estrutura e conteudo de forma que ele possa ser lido perfeitamente por um modelo de inteligência artificial. \nConteúdo do arquivo:  {{ $json.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1408,
+        208
+      ],
+      "id": "e66f186d-77cf-4f9e-b066-dbbf01e66772",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1904,
+        656
+      ],
+      "id": "4c6d928c-2848-4c08-85b4-b4713e2d09bd",
+      "name": "Analyze document"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1360,
+        432
+      ],
+      "id": "4ab43be2-5b52-4a0a-9a74-6afd3d3e686f",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cloud.llamaindex.ai/api/parsing/upload",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "parsing_instruction",
+              "value": "Extraia todos os dados presentes mantendo o formato Markdown rigorosamente a fim de representar precisamente a estrututa e os dados contidos nela"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -608,
+        1312
+      ],
+      "id": "48955593-e8a7-438d-a5b9-077ca02d9da3",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PRzWtkmoHcCDRjkB",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 50
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -448,
+        1312
+      ],
+      "id": "0690d367-faf6-41d8-a8be-92493c509acf",
+      "name": "Wait",
+      "webhookId": "8884eb4d-5288-4dc4-9005-a2d0a7ea46b3"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.cloud.llamaindex.ai/api/parsing/job/{{ $json.id }}/result/markdown",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -288,
+        1312
+      ],
+      "id": "38e51ebc-9201-4d1b-912b-89142920f1bf",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PRzWtkmoHcCDRjkB",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1XlZ15eR71SqPo41tL3ZGNhqt5QDRI2HW",
+          "mode": "list",
+          "cachedResultName": "MQ_EXE_ITED_SPE_PLCO.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1XlZ15eR71SqPo41tL3ZGNhqt5QDRI2HW/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -416,
+        816
+      ],
+      "id": "f3aa230f-ab10-4b51-a42d-2a46bd4e4939",
+      "name": "Download file2",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ui1vMcnDNPq58quk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## I'm a note \n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/components/sticky-notes/) Esse era o fluxo inicial para limpar e colocar os dados no supabase. Ligue o supabase aqui. \n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        832,
+        736
+      ],
+      "id": "b5a1c919-8401-4850-9291-fe6843a3451a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -176,
+        768
+      ],
+      "id": "3c4b5441-5266-4aa5-96d8-c14f91f747aa",
+      "name": "Download file3",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ui1vMcnDNPq58quk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "15RfKB258cBRO_kjU_2aDskw1H76Bukxi",
+          "mode": "list",
+          "cachedResultName": "RAG",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/15RfKB258cBRO_kjU_2aDskw1H76Bukxi"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        320,
+        1216
+      ],
+      "id": "5ccd65ee-1c1d-4af4-b007-33b4e035ab70",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ui1vMcnDNPq58quk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        528,
+        1216
+      ],
+      "id": "044b50e5-b387-4209-b116-d14dd60a5194",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ui1vMcnDNPq58quk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst texto = buffer.toString('utf-8');\nconst nome = items[0].binary.data.fileName;\n\nif (!texto || texto.trim().length === 0) {\n  throw new Error('Arquivo vazio: ' + nome);\n}\n\nreturn [{ json: { text: texto, nome_arquivo: nome } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        1216
+      ],
+      "id": "d51f2b7f-84c3-4460-966d-66e7696fdf72",
+      "name": "Preparar Texto"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "pcs_escritas_projetos_spe",
+          "mode": "list",
+          "cachedResultName": "pcs_escritas_projetos_spe"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1120,
+        1216
+      ],
+      "id": "20441a57-c97d-44d3-8e3e-8793a4a3b89f",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "cb2uMVlkgCkdxLxh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        960,
+        1440
+      ],
+      "id": "5d40495a-240a-4ada-ac50-5e4f7a1b06de",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": 1200,
+        "chunkOverlap": 150,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        1648
+      ],
+      "id": "a01c653c-b878-4099-9ae4-7945f722e24d",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "fileName",
+                "value": "={{ $json.nome_arquivo }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1168,
+        1472
+      ],
+      "id": "67f4113a-ba49-4dd5-a7f7-7e13e6649364",
+      "name": "Default Data Loader1"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        672,
+        2192
+      ],
+      "id": "11b073a9-5c7c-4e5f-9b97-452b0b2c0573",
+      "name": "Download file4",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ui1vMcnDNPq58quk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst texto = buffer.toString('utf-8');\nconst nome = items[0].binary.data.fileName;\n\nif (!texto || texto.trim().length === 0) {\n  throw new Error('Arquivo vazio: ' + nome);\n}\n\nreturn [{ json: { text: texto, nome_arquivo: nome } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        2192
+      ],
+      "id": "7587f3ea-61cf-47dd-92e3-124108d1dc39",
+      "name": "Preparar Texto1"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "informacoes_luciana",
+          "mode": "list",
+          "cachedResultName": "informacoes_luciana"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1264,
+        2192
+      ],
+      "id": "46d4e92b-c47c-4886-b40c-1016c77c53e1",
+      "name": "Supabase Vector Store2",
+      "credentials": {
+        "supabaseApi": {
+          "id": "cb2uMVlkgCkdxLxh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1104,
+        2416
+      ],
+      "id": "f70460b8-1fcf-4d57-8159-26641bc618db",
+      "name": "Embeddings OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": 1200,
+        "chunkOverlap": 150,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        2624
+      ],
+      "id": "867f0ba5-ed4e-46a7-abb5-12796ae9c4df",
+      "name": "Recursive Character Text Splitter1"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "fileName",
+                "value": "={{ $json.nome_arquivo }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1312,
+        2448
+      ],
+      "id": "ea3204c2-199a-429c-8eca-1349a02e3032",
+      "name": "Default Data Loader2"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1quZoEooqwlPzTkIejZc9Xqz7YRWSknV2",
+          "mode": "list",
+          "cachedResultName": "RAG Luciana",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1quZoEooqwlPzTkIejZc9Xqz7YRWSknV2"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        464,
+        2192
+      ],
+      "id": "25461745-475b-4d15-89b2-1e0f49f3a6ad",
+      "name": "Google Drive Trigger para Luciana",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ui1vMcnDNPq58quk",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        []
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        []
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download file2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        []
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file2": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        []
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Preparar Texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Texto": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader1",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file4": {
+      "main": [
+        [
+          {
+            "node": "Preparar Texto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Texto1": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader2",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader2": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store2",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger para Luciana": {
+      "main": [
+        [
+          {
+            "node": "Download file4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Google Drive Trigger": {
+      "lastTimeChecked": "2026-04-19T11:48:38Z"
+    },
+    "node:Google Drive Trigger para Luciana": {
+      "lastTimeChecked": "2026-04-19T11:49:12Z"
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Code in JavaScript1": [
+      {
+        "json": {
+          "texto_limpo": "Almada \nFevereiro de\n2024\nINSTALAÇÕES E EQUIPAMENTOS DE TELECOMUNICAÇÕES (ITED)\nNotas Prévias\nA\nNão constituindo, este documento, uma descrição exaustiva das condições em que os\ntrabalhos e fornecimentos deverão ser executados, deverá ser lido obrigatoriamente em\nconjunto com as peças escritas e desenhadas constituíntes deste Projecto.\nB\nAlém do fornecimento de materiais e equipamentos nos artigos encontram-se englobados\nigualmente os trabalhos de construção civil, fornecimento de meios mecânicos de escavação,\nfornecimento e aplicação de selagens corta-fogo, ensaios e certificações, telas finais e remoção\npara vazadouro no final da intervenção dos materiais excentários não utilizados.\nC\nA numeração dos itens correspondentes aos artigos dos trabalhos e fornecimentos a executar\npoderá não corresponder à numeração apresentada em Caderno de Encargos, pelo que a sua\ncorrespondência deverá ser efectuada pela descrição e natureza dos trabalhos e\nfornecimentos.\nD\nAs eventuais referencias a marcas, de materiais, de produtos ou de equipamentos, são\napresentadas a titulo meramente indicativo de qualidade pretendido, devendo entender-se\nassociadas ao termo \" ou equivalente\"\nE \nTodos os trabalhos deverão ser realizados de acordo com o projecto (Peças escritas e\ndesenhadas) e satisfazendo o especificado no Caderno de Encargos.\nF \nOs artigos com quantidades \"NA\" dizem respeito a trabalhos não aplicáveis, pelo que não\ndeverão ser objecto de cotação.\nG Critérios de Medição de acordo com o indicado no caderno de encargos.\n1 REDE DE TUBAGENS\nml. \nml. \nml. \nml. \nml. \nml. \nml. \nCusto\nUnitários Parciais Totais\nMORADIA UNIFAMILIAR\nRUA DOUTOR LEONARDO FERRAZ DE CARVALHO, LOTE 5\nINSTALAÇÕES E EQUIPAMENTOS DE TELECOMUNICAÇÕES (ITED)\nMAPA DE QUANTIDADES\nArtº N.º Designação Un Quantid.\nOrçamento\nPágina 1 de 3\nAlmada \nFevereiro de\n2024\nCusto\nUnitários Parciais Totais\nMORADIA UNIFAMILIAR\nRUA DOUTOR LEONARDO FERRAZ DE CARVALHO, LOTE 5\nINSTALAÇÕES E EQUIPAMENTOS DE TELECOMUNICAÇÕES (ITED)\nMAPA DE QUANTIDADES\nArtº N.º Designação Un Quantid.\nOrçamento\nFornecimento e montagem de caminho de cabos metálico perfurado,\nsuspenso no interior de teto falso por perfis afixados no teto, dimensões\nL:50xA:35 mm, incluindo o fornecimento de todos os acessórios\nnecessários para a sua instalação (uniões, porcas, parafusos e perfis).\nMarca Obo Bettermann Refª GRM 35 50 G.\nml. \nFornrcimento e montagem de caixa de aparelhagem funda (dimensão\nminima 53x53x55 mm), em plástico ou outro material não condutor, com\nindice de protecção minimo IP 40 IK 02 e resistentes à propagação de\nchama.\nun. \nFornecimento e montagem de Caixa de Acesso Multioperador (CAM), no\nmuro técnico com dimensão minima de 300x300x300 mm. \nun. \nFornecimento e montagem de caixa de passagem do tipo I3 (dimensões\nA:90xL:180xP:50 mm), em plástico ou outro material não condutor, com\nindice de protecção minimo IP 40 IK 02 e resistente à propagação de\nchama.\nun. \nFornecimento e montagem de caixa de passagem do tipo C1 dimensões\nALP:274x324x125 mm), em plastico ou outro material não condutor, com\nindice de protecção minimo IP 40 IK 02 e resistentes à propageção de\nchama.\nun. \nFornecimento e montagem em vala técnica de câmara de visita pré-\nfabricada de betão armado do tipo NR1 de dimensões 933x783x1000 mm\n(AxLxP) e 10 cm de espessura, com tampa de ferro fundido ductil. Marca\nConcretex.\nun. \n2 REDE DE CABLAGEM\nml. \nml. \nml. \n3 EQUIPAMENTOS\nFornecimento e montagem de um ponto de distribuição/ATI\n(24PC+12CC+2Fo) equipado conforme descrição nas peças desenhadas,\nmarca Teka Eletronics Refª 2901939.\nun. \nPágina 2 de 3\nAlmada \nFevereiro de\n2024\nCusto\nUnitários Parciais Totais\nMORADIA UNIFAMILIAR\nRUA DOUTOR LEONARDO FERRAZ DE CARVALHO, LOTE 5\nINSTALAÇÕES E EQUIPAMENTOS DE TELECOMUNICAÇÕES (ITED)\nMAPA DE QUANTIDADES\nArtº N.º Designação Un Quantid.\nOrçamento\nFornecimento e montagem de caixa dupla do tipo ATI 3 Play Serie 15\",\nmarca Teka Eletronics Refª 2901534. \nun. \nFornecimento e montagem de um amplificador de vivenda (TV+ret,SAT) de\n1 saida, marca Teka Eletronics Refª 2901075. \nun. \nFornecimento e montagem de conectores RJ45 em cabo UTP 4p/cat.6 no\ninterior de caixa de aparelhagem emebebida, marca Teka Eletronics\nRefª2901743\nun. \nFornecimento e montagem de espelho para conectores RJ45 em caixa de\naparelhagem embebida, marca Berker Refª Série 1930. \nun. \nFornecimento e montagem de conjunto formado por tomada TV/R+SAT\nterminal estrela + espelho, marca Berker Refª Série 1930. \ncj. \nFornecimento e montagem de alinhadores simples em fibras monomodo\nno interior de caixas de aparelhagem embebidas, marca Teka Eletronics\nRefª 2901111.\nun. \nFornecimento e montagem de espelho para alinhadores de fibra otica em\ncaixa de aparelhagem embebida, marca Berker Refª Série 1930. \nun. \n4 ENSAIOS E CERTIFICAÇÕES\nEnsaios e certificação da instalação ITED Cj. \n5 DIVERSOS\nAbertura e tapamento de vala com reposicionamento de pavimento, de\nacordo com o especificado em C.E., para instalação de canalização a uma\nprofundidade de 0,8. A execução de valas deve incluir todos os trabalhos\nnecessários à sua realização, inclusive escoramento e entivação com a\ncolocação vertical ao longo das paredes da vala de costaneiras travadas\npor meio de barrotes, de forma a conter a desagregação do terreno\nadjacente. A vala terá a largura de 0,5m e profundidade de 0,8 m e\nservição para instalação de tubagens PEAD, envolvida em cadmada de\nbetão pobre.\nm3 \nTelas Finais un. \nPágina 3 de 3"
+        }
+      }
+    ]
+  },
+  "versionId": "6be53a6a-7e28-44e5-9b16-316f641a9c5f",
+  "activeVersionId": "6be53a6a-7e28-44e5-9b16-316f641a9c5f",
+  "triggerCount": 3,
+  "shared": [
+    {
+      "updatedAt": "2026-03-17T13:07:44.337Z",
+      "createdAt": "2026-03-17T13:07:44.337Z",
+      "role": "workflow:owner",
+      "workflowId": "6ustjVFZqByj2Pur",
+      "projectId": "S9LqWfCzitbCNHAv"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-19T11:34:38.771Z",
+    "createdAt": "2026-04-19T11:33:52.496Z",
+    "versionId": "6be53a6a-7e28-44e5-9b16-316f641a9c5f",
+    "workflowId": "6ustjVFZqByj2Pur",
+    "nodes": [
+      {
+        "parameters": {
+          "operation": "pdf",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1,
+        "position": [
+          384,
+          752
+        ],
+        "id": "f3fe7934-a179-495a-b049-bdce38c38426",
+        "name": "Extract from File"
+      },
+      {
+        "parameters": {
+          "options": {
+            "metadata": {
+              "metadataValues": [
+                {
+                  "name": "fileName",
+                  "value": "={{ $json.nome_arquivo }}"
+                }
+              ]
+            }
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+        "typeVersion": 1.1,
+        "position": [
+          1920,
+          1312
+        ],
+        "id": "2b5fcf6d-43c4-452f-9f08-97dca906bde9",
+        "name": "Default Data Loader"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "id": "e7221ab1-1f08-4550-94b0-d04f7c2828c0",
+        "name": "When chat message received",
+        "webhookId": "97413400-a34e-401d-a8b8-6cc832e5af06"
+      },
+      {
+        "parameters": {
+          "mode": "retrieve-as-tool",
+          "toolDescription": "retorne os dados que forem encontrados dentro desse vetor",
+          "tableName": {
+            "__rl": true,
+            "value": "pcs_escritas_projetos_spe",
+            "mode": "list",
+            "cachedResultName": "pcs_escritas_projetos_spe"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+        "typeVersion": 1.3,
+        "position": [
+          480,
+          176
+        ],
+        "id": "f9854739-d159-4c15-8c2f-b35a046009cd",
+        "name": "Supabase Vector Store1",
+        "credentials": {
+          "supabaseApi": {
+            "id": "cb2uMVlkgCkdxLxh",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "text-embedding-3-large",
+          "options": {
+            "dimensions": 1536
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          560,
+          336
+        ],
+        "id": "922e26c3-532a-4dd2-863e-31d921b85236",
+        "name": "Embeddings OpenAI1",
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Pega o texto extraído do PDF\nlet texto = $json[\"text\"];\nlet nome = $('Download file').first().json.name\n// Remove linhas inúteis\ntexto = texto\n  .split('\\n')\n  .filter(linha => \n    linha.trim() !== '' && \n    !linha.includes('ReportLab') && \n    !linha.includes('anonymous') && \n    !linha.includes('unspecified') && \n    !linha.match(/D:\\d+/) && \n    !linha.match(/^\\d+\\.\\d+/)\n  )\n  .join('\\n');\n\n// Retorna o texto limpo\nreturn [{ texto_limpo: texto, nome_arquivo: nome  }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          624,
+          752
+        ],
+        "id": "6ca021a3-2599-4086-9339-531e08441ac2",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-5-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          128,
+          208
+        ],
+        "id": "85932da2-af69-4f0a-97e6-742289333908",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {
+            "systemMessage": "Leia o banco para responder todas as perguntas"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          208,
+          0
+        ],
+        "id": "7813ce3a-405d-4cf1-a277-7abdc4acf1aa",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "operation": "pdf",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1,
+        "position": [
+          1232,
+          208
+        ],
+        "id": "c59672e2-2255-4879-a6de-47dafc141698",
+        "name": "Extract from File1"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Pega o texto extraído do PDF\nlet texto = $json[\"text\"];\nlet nome = $('Download file1').first().json.name\n// Remove linhas inúteis\ntexto = texto\n  .split('\\n')\n  .filter(linha => \n    linha.trim() !== '' && \n    !linha.includes('ReportLab') && \n    !linha.includes('anonymous') && \n    !linha.includes('unspecified') && \n    !linha.match(/D:\\d+/) && \n    !linha.match(/^\\d+\\.\\d+/)\n  )\n  .join('\\n');\n\n// Retorna o texto limpo\nreturn [{ texto_limpo: texto, nome_arquivo: nome  }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1520,
+          640
+        ],
+        "id": "78dcaf3a-0a6b-4bfa-a103-9e6fc62c45ed",
+        "name": "Code in JavaScript1"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -624,
+          816
+        ],
+        "id": "7256ce6f-f646-416c-97e6-649fe553643b",
+        "name": "When clicking ‘Execute workflow’"
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": {
+            "__rl": true,
+            "value": "1XlZ15eR71SqPo41tL3ZGNhqt5QDRI2HW",
+            "mode": "list",
+            "cachedResultName": "MQ_EXE_ITED_SPE_PLCO.pdf",
+            "cachedResultUrl": "https://drive.google.com/file/d/1XlZ15eR71SqPo41tL3ZGNhqt5QDRI2HW/view?usp=drivesdk"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          1008,
+          208
+        ],
+        "id": "41906bd8-99a0-4f91-a3f9-3a57fb8ecca7",
+        "name": "Download file1",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "ui1vMcnDNPq58quk",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Transcreva o seguinte arquivo para a notação de mark down (.md) mantendo exatamente a sua estrutura e conteudo de forma que ele possa ser lido perfeitamente por um modelo de inteligência artificial. \nConteúdo do arquivo:  {{ $json.text }}",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          1408,
+          208
+        ],
+        "id": "e66f186d-77cf-4f9e-b066-dbbf01e66772",
+        "name": "AI Agent1"
+      },
+      {
+        "parameters": {
+          "resource": "document",
+          "modelId": {
+            "__rl": true,
+            "mode": "list",
+            "value": ""
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.googleGemini",
+        "typeVersion": 1.1,
+        "position": [
+          1904,
+          656
+        ],
+        "id": "4c6d928c-2848-4c08-85b4-b4713e2d09bd",
+        "name": "Analyze document"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-5-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          1360,
+          432
+        ],
+        "id": "4ab43be2-5b52-4a0a-9a74-6afd3d3e686f",
+        "name": "OpenAI Chat Model1",
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.cloud.llamaindex.ai/api/parsing/upload",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "parameterType": "formBinaryData",
+                "name": "file",
+                "inputDataFieldName": "data"
+              },
+              {
+                "name": "parsing_instruction",
+                "value": "Extraia todos os dados presentes mantendo o formato Markdown rigorosamente a fim de representar precisamente a estrututa e os dados contidos nela"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          -608,
+          1312
+        ],
+        "id": "48955593-e8a7-438d-a5b9-077ca02d9da3",
+        "name": "HTTP Request",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "PRzWtkmoHcCDRjkB",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "amount": 50
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          -448,
+          1312
+        ],
+        "id": "0690d367-faf6-41d8-a8be-92493c509acf",
+        "name": "Wait",
+        "webhookId": "8884eb4d-5288-4dc4-9005-a2d0a7ea46b3"
+      },
+      {
+        "parameters": {
+          "url": "=https://api.cloud.llamaindex.ai/api/parsing/job/{{ $json.id }}/result/markdown",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          -288,
+          1312
+        ],
+        "id": "38e51ebc-9201-4d1b-912b-89142920f1bf",
+        "name": "HTTP Request1",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "PRzWtkmoHcCDRjkB",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": {
+            "__rl": true,
+            "value": "1XlZ15eR71SqPo41tL3ZGNhqt5QDRI2HW",
+            "mode": "list",
+            "cachedResultName": "MQ_EXE_ITED_SPE_PLCO.pdf",
+            "cachedResultUrl": "https://drive.google.com/file/d/1XlZ15eR71SqPo41tL3ZGNhqt5QDRI2HW/view?usp=drivesdk"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          -416,
+          816
+        ],
+        "id": "f3aa230f-ab10-4b51-a42d-2a46bd4e4939",
+        "name": "Download file2",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "ui1vMcnDNPq58quk",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## I'm a note \n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/components/sticky-notes/) Esse era o fluxo inicial para limpar e colocar os dados no supabase. Ligue o supabase aqui. \n"
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          832,
+          736
+        ],
+        "id": "b5a1c919-8401-4850-9291-fe6843a3451a",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": {
+            "__rl": true,
+            "value": "={{ json.id }}",
+            "mode": "id"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          -176,
+          768
+        ],
+        "id": "3c4b5441-5266-4aa5-96d8-c14f91f747aa",
+        "name": "Download file3",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "ui1vMcnDNPq58quk",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "mode": "everyMinute"
+              }
+            ]
+          },
+          "triggerOn": "specificFolder",
+          "folderToWatch": {
+            "__rl": true,
+            "value": "15RfKB258cBRO_kjU_2aDskw1H76Bukxi",
+            "mode": "list",
+            "cachedResultName": "RAG",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/15RfKB258cBRO_kjU_2aDskw1H76Bukxi"
+          },
+          "event": "fileCreated",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDriveTrigger",
+        "typeVersion": 1,
+        "position": [
+          320,
+          1216
+        ],
+        "id": "5ccd65ee-1c1d-4af4-b007-33b4e035ab70",
+        "name": "Google Drive Trigger",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "ui1vMcnDNPq58quk",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": {
+            "__rl": true,
+            "value": "={{ $json.id }}",
+            "mode": "id"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          528,
+          1216
+        ],
+        "id": "044b50e5-b387-4209-b116-d14dd60a5194",
+        "name": "Download file",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "ui1vMcnDNPq58quk",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst texto = buffer.toString('utf-8');\nconst nome = items[0].binary.data.fileName;\n\nif (!texto || texto.trim().length === 0) {\n  throw new Error('Arquivo vazio: ' + nome);\n}\n\nreturn [{ json: { text: texto, nome_arquivo: nome } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          736,
+          1216
+        ],
+        "id": "d51f2b7f-84c3-4460-966d-66e7696fdf72",
+        "name": "Preparar Texto"
+      },
+      {
+        "parameters": {
+          "mode": "insert",
+          "tableName": {
+            "__rl": true,
+            "value": "pcs_escritas_projetos_spe",
+            "mode": "list",
+            "cachedResultName": "pcs_escritas_projetos_spe"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+        "typeVersion": 1.3,
+        "position": [
+          1120,
+          1216
+        ],
+        "id": "20441a57-c97d-44d3-8e3e-8793a4a3b89f",
+        "name": "Supabase Vector Store",
+        "credentials": {
+          "supabaseApi": {
+            "id": "cb2uMVlkgCkdxLxh",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "text-embedding-3-large",
+          "options": {
+            "dimensions": 1536
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          960,
+          1440
+        ],
+        "id": "5d40495a-240a-4ada-ac50-5e4f7a1b06de",
+        "name": "Embeddings OpenAI",
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chunkSize": 1200,
+          "chunkOverlap": 150,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+        "typeVersion": 1,
+        "position": [
+          1184,
+          1648
+        ],
+        "id": "a01c653c-b878-4099-9ae4-7945f722e24d",
+        "name": "Recursive Character Text Splitter"
+      },
+      {
+        "parameters": {
+          "jsonMode": "expressionData",
+          "jsonData": "={{ $json.text }}",
+          "textSplittingMode": "custom",
+          "options": {
+            "metadata": {
+              "metadataValues": [
+                {
+                  "name": "fileName",
+                  "value": "={{ $json.nome_arquivo }}"
+                }
+              ]
+            }
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+        "typeVersion": 1.1,
+        "position": [
+          1168,
+          1472
+        ],
+        "id": "67f4113a-ba49-4dd5-a7f7-7e13e6649364",
+        "name": "Default Data Loader1"
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": {
+            "__rl": true,
+            "value": "={{ $json.id }}",
+            "mode": "id"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          672,
+          2192
+        ],
+        "id": "11b073a9-5c7c-4e5f-9b97-452b0b2c0573",
+        "name": "Download file4",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "ui1vMcnDNPq58quk",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst texto = buffer.toString('utf-8');\nconst nome = items[0].binary.data.fileName;\n\nif (!texto || texto.trim().length === 0) {\n  throw new Error('Arquivo vazio: ' + nome);\n}\n\nreturn [{ json: { text: texto, nome_arquivo: nome } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          880,
+          2192
+        ],
+        "id": "7587f3ea-61cf-47dd-92e3-124108d1dc39",
+        "name": "Preparar Texto1"
+      },
+      {
+        "parameters": {
+          "mode": "insert",
+          "tableName": {
+            "__rl": true,
+            "value": "informacoes_luciana",
+            "mode": "list",
+            "cachedResultName": "informacoes_luciana"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+        "typeVersion": 1.3,
+        "position": [
+          1264,
+          2192
+        ],
+        "id": "46d4e92b-c47c-4886-b40c-1016c77c53e1",
+        "name": "Supabase Vector Store2",
+        "credentials": {
+          "supabaseApi": {
+            "id": "cb2uMVlkgCkdxLxh",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "text-embedding-3-large",
+          "options": {
+            "dimensions": 1536
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          1104,
+          2416
+        ],
+        "id": "f70460b8-1fcf-4d57-8159-26641bc618db",
+        "name": "Embeddings OpenAI2",
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chunkSize": 1200,
+          "chunkOverlap": 150,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+        "typeVersion": 1,
+        "position": [
+          1328,
+          2624
+        ],
+        "id": "867f0ba5-ed4e-46a7-abb5-12796ae9c4df",
+        "name": "Recursive Character Text Splitter1"
+      },
+      {
+        "parameters": {
+          "jsonMode": "expressionData",
+          "jsonData": "={{ $json.text }}",
+          "textSplittingMode": "custom",
+          "options": {
+            "metadata": {
+              "metadataValues": [
+                {
+                  "name": "fileName",
+                  "value": "={{ $json.nome_arquivo }}"
+                }
+              ]
+            }
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+        "typeVersion": 1.1,
+        "position": [
+          1312,
+          2448
+        ],
+        "id": "ea3204c2-199a-429c-8eca-1349a02e3032",
+        "name": "Default Data Loader2"
+      },
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "mode": "everyMinute"
+              }
+            ]
+          },
+          "triggerOn": "specificFolder",
+          "folderToWatch": {
+            "__rl": true,
+            "value": "1quZoEooqwlPzTkIejZc9Xqz7YRWSknV2",
+            "mode": "list",
+            "cachedResultName": "RAG Luciana",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1quZoEooqwlPzTkIejZc9Xqz7YRWSknV2"
+          },
+          "event": "fileCreated",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDriveTrigger",
+        "typeVersion": 1,
+        "position": [
+          464,
+          2192
+        ],
+        "id": "25461745-475b-4d15-89b2-1e0f49f3a6ad",
+        "name": "Google Drive Trigger para Luciana",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "ui1vMcnDNPq58quk",
+            "name": "Google Drive account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Extract from File": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Default Data Loader": {
+        "ai_document": [
+          []
+        ]
+      },
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Supabase Vector Store1": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings OpenAI1": {
+        "ai_embedding": [
+          [
+            {
+              "node": "Supabase Vector Store1",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          []
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract from File1": {
+        "main": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When clicking ‘Execute workflow’": {
+        "main": [
+          [
+            {
+              "node": "Download file2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download file1": {
+        "main": [
+          [
+            {
+              "node": "Extract from File1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent1": {
+        "main": [
+          []
+        ]
+      },
+      "OpenAI Chat Model1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download file2": {
+        "main": [
+          []
+        ]
+      },
+      "HTTP Request1": {
+        "main": [
+          []
+        ]
+      },
+      "Google Drive Trigger": {
+        "main": [
+          [
+            {
+              "node": "Download file",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download file": {
+        "main": [
+          [
+            {
+              "node": "Preparar Texto",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Texto": {
+        "main": [
+          [
+            {
+              "node": "Supabase Vector Store",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings OpenAI": {
+        "ai_embedding": [
+          [
+            {
+              "node": "Supabase Vector Store",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Recursive Character Text Splitter": {
+        "ai_textSplitter": [
+          [
+            {
+              "node": "Default Data Loader1",
+              "type": "ai_textSplitter",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Default Data Loader1": {
+        "ai_document": [
+          [
+            {
+              "node": "Supabase Vector Store",
+              "type": "ai_document",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download file4": {
+        "main": [
+          [
+            {
+              "node": "Preparar Texto1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Texto1": {
+        "main": [
+          [
+            {
+              "node": "Supabase Vector Store2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings OpenAI2": {
+        "ai_embedding": [
+          [
+            {
+              "node": "Supabase Vector Store2",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Recursive Character Text Splitter1": {
+        "ai_textSplitter": [
+          [
+            {
+              "node": "Default Data Loader2",
+              "type": "ai_textSplitter",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Default Data Loader2": {
+        "ai_document": [
+          [
+            {
+              "node": "Supabase Vector Store2",
+              "type": "ai_document",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Drive Trigger para Luciana": {
+        "main": [
+          [
+            {
+              "node": "Download file4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Rogerio rgapxo@gmail.com",
+    "name": "Version 6be53a6a",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-04-30T13:27:18.748Z",
+      "createdAt": "2026-04-30T13:27:18.748Z",
+      "id": "6hICcxiCVgX283DX",
+      "name": "30Abril2026"
+    }
+  ]
+}
