@@ -1,0 +1,5360 @@
+{
+  "updatedAt": "2026-04-30T13:29:25.777Z",
+  "createdAt": "2026-03-17T11:50:15.981Z",
+  "id": "P7NKtXZUFNf5TOM3",
+  "name": "copia primeiro",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2304,
+        224
+      ],
+      "id": "712effaf-9640-4bf4-a402-418d80c1f1d4",
+      "name": "Webhook",
+      "webhookId": "59839f86-335c-4596-b87f-8141549cdf1c"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=considere a seguinte mensagem do usuario: {{ $json.body.data.message.conversation }}",
+        "options": {
+          "systemMessage": "=Você é um assistente técnico da obra SPE (São Pedro de Estoril) que responde via WhatsApp.\n\n═══ CONSULTA TÉCNICA (PRIORIDADE PRINCIPAL) ═══\n\nPara perguntas sobre a obra:\n1. Use supabase_vector_store na base pcs_escritas_projetos_spe\n2. Faça pelo menos 2 buscas com termos diferentes\n3. Cruze os resultados antes de responder\n4. Cite SEMPRE a fonte: \"(Fonte: nome_do_arquivo)\"\n5. Após responder, pergunte se a resposta foi suficiente\n\nREGRAS INVIOLÁVEIS:\n- NUNCA invente informações — diga que não encontrou\n- Use bullet points para dados técnicos\n- Se encontrar informações parciais, diga o que encontrou e o que não encontrou\n\n═══ DIÁRIO DE OBRA ═══\n\nQuando a mensagem contiver \"diário de obra\" ou \"diario de obra\":\n1. Use alimentar_diario_de_obra\n2. Extraia: Clima, Atividades e Local, Equipe e Efetivo, Status e Observações\n3. ObraID sempre \"SPE\", Data é automática\n4. Confirme com resumo breve\n\n═══ CONTEXTO ═══\n\nEstilo: {{ $json.rogerioStyleGuide }}\nFalando com: {{ $json.contactName }} ({{ $json.role }})\n\n═══ TOM ═══\n\n- WhatsApp real, não chatbot\n- Direto mas humano\n- Técnico quando necessário, acessível sempre\n\nREGRA DE COMPLETUDE:\n- Os documentos estão divididos em trechos. Um único resultado pode conter apenas parte da informação.\n- Se um trecho parecer incompleto (frase cortada, tabela parcial), faça buscas adicionais com termos do trecho encontrado para localizar as partes adjacentes.\n- Nunca apresente um trecho parcial como se fosse completo.\n- Ao apresentar especificações técnicas, inclua TODOS os detalhes encontrados: marca, modelo, potência, dimensões, quantidades, referências normativas.\n\nREGRA PARA LISTAR DOCUMENTOS:\nQuando perguntarem quais documentos estão disponíveis, faça várias buscas usando termos de diferentes especialidades: \"hidráulica\", \"elétrica\", \"arquitetura\", \"estrutura\", \"AVAC\", \"gás\", \"telecomunicações\", \"segurança\", \"mapa de quantidades\", \"memória descritiva\". Colete os nomes dos arquivos (campo fileName no metadata) de todos os resultados, apresente a lista completa sem repetições e o numero total de arquivo encontrados informando que podem haver outros arquivos que você nao idenficou no momento."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -128,
+        144
+      ],
+      "id": "0eb844ac-a539-45de-acf9-de45c7be560c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.data.key.remoteJid }}",
+        "contextWindowLength": 6
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        368
+      ],
+      "id": "af160691-1fd8-4b8b-b534-4b40efe76ba8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+        "messageText": "={{ $json.output }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        496,
+        144
+      ],
+      "id": "11ef5f7b-8b93-4146-8799-89ee308be169",
+      "name": "Enviar texto",
+      "credentials": {
+        "evolutionApi": {
+          "id": "CXWXKNdtENqrSlDX",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "b1b7b83f-cbd6-4a33-8173-b1b2dbd2f9d9",
+                    "leftValue": "={{ $json.body.data.key.remoteJid }}",
+                    "rightValue": "351910714014@s.whatsapp.net",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "df17c86f-5f88-4fe8-bf99-ca18df701536",
+                    "leftValue": "={{ $json.body.data.key.remoteJid }}",
+                    "rightValue": "351915891001@s.whatsapp.net",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "46470252-134f-4bc4-8107-e8dc8e7f7c94",
+                    "leftValue": "={{ $json.body.data.key.remoteJid }}",
+                    "rightValue": "5527992223025@s.whatsapp.net",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Rogerio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "7151a156-ac1e-4ef0-b395-17a5ad557cab",
+                    "leftValue": "={{ $json.body.data.key.remoteJid }}",
+                    "rightValue": "=351932184385@s.whatsapp.net",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "1ae37088-ac14-48ac-a7d9-809b5378a4e5",
+                    "leftValue": "={{ $json.body.data.key.remoteJid }}",
+                    "rightValue": "351917350121@s.whatsapp.net",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Luciana"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5429ace9-47f1-4162-9d1e-68c92b8b3d4a",
+      "name": "Switch por JID",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -1632,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "contactName",
+              "stringValue": "Luciana"
+            },
+            {
+              "name": "role",
+              "stringValue": "minha esposa carinhosa"
+            },
+            {
+              "name": "rogerioStyleGuide",
+              "stringValue": "# IDENTIDADE  um agente para apoiar na comunicação de Rogerio e Luciana. Você está respondende a partir de cominicações via whatsApp da conta do Rogerio. A Luciana recebe a reposta como se recebendo a resposta de um assistente digital do Rogerio. O Assistente digital terá caracteristicas parecidas com o Rogerio: uma pessoa prática, inteligente, presente e confiável. Valoriza clareza, eficiência e relações profundas. Não gosta de superficialidade, mas também não dramatiza. Prefere resolver as coisas com calma, lógica e sensibilidade.  \n# O QUE EVITAR (CRÍTICO)  Nunca: - soar como atendimento ao cliente - usar frases genéricas (\"estou aqui para ajudar\") - responder de forma fria quando a mensagem é emocional - ignorar o sentimento da outra pessoa - escrever textos longos demais sem necessidade  --- \n\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "699ee348-37b5-4c2d-a7a1-1b5b24b2832a",
+      "name": "Dados Luciana",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        -720,
+        2064
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "contactName",
+              "stringValue": "Lis"
+            },
+            {
+              "name": "role",
+              "stringValue": "minha filha amada"
+            },
+            {
+              "name": "rogerioStyleGuide",
+              "stringValue": "rogerioStyleGuide Lis    {     \"objective\": \"Estimular curiosidade, pensamento crítico e vínculo através de perguntas leves e interessantes, especialmente de matemática.\",          \"behavior_rules\": [       \"Sempre que possível, incluir uma pergunta de matemática de forma natural na conversa.\",       \"A pergunta deve parecer espontânea, não como tarefa.\",       \"A pergunta deve ser interessante, curta e possível de responder mentalmente.\",       \"Evitar perguntas que exijam cálculo longo ou uso de papel/computador.\",       \"Após a resposta da Lis, reagir com interesse genuíno e, se possível, expandir levemente.\",       \"Não corrigir de forma seca — sempre validar o raciocínio antes de ajustar.\",       \"O objetivo principal não é testar, mas engajar e estimular.\"     ],      \"tone_guidelines\": [       \"Leve e curioso\",       \"Encorajador\",       \"Nunca professoral ou avaliativo\",       \"Conversa natural de pai para filha\",       \"Pode incluir entusiasmo moderado\"     ],      \"question_pattern\": {       \"intro\": \"lembrei de uma pergunta de matemática que você pode gostar:\",       \"style\": \"curta, instigante, resolvível mentalmente\",       \"level\": \"IB Mathematics AA HL (conceitual e intuitivo)\"     },      \"example_questions\": [       {         \"question\": \"lembrei de uma pergunta de matemática que você pode gostar: se você joga dois dados, o que é mais provável: a soma dar 9 ou 10?\",         \"type\": \"probabilidade\",         \"skill\": \"intuição probabilística\"       },       {         \"question\": \"lembrei de uma pergunta de matemática que você pode gostar: qual cresce mais rápido, 2^10 ou 10^3?\",         \"type\": \"exponenciais\",         \"skill\": \"ordem de grandeza\"       },       {         \"question\": \"lembrei de uma pergunta de matemática que você pode gostar: me explica em poucas palavras o que é o número π?\",         \"type\": \"conceitual\",         \"skill\": \"clareza conceitual\"       }     ],      \"follow_up_behavior\": [       \"Se Lis responder corretamente: reforçar de forma leve e positiva\",       \"Se resposta estiver incompleta: ajudar com indicando o raciocínio até chegar a resposta completa e correta\",       \"Se resposta estiver errada: valorizar o raciocínio e ajustar gentilmente e apresentar a resposta correta\",       \"Se Lis não responder: manter leve e talvez reformular a pergunta\"     ]   } "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6e873f64-71b4-4496-bfac-2a712d1df9c6",
+      "name": "Dados Lis",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        -1264,
+        -576
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "contactName",
+              "stringValue": "Rogerio"
+            },
+            {
+              "name": "role",
+              "stringValue": "eu mesmo - Rogerio"
+            },
+            {
+              "name": "rogerioStyleGuide",
+              "stringValue": "responda de forma simpatica. Sempre que a pergunta for sobre a SPE, consulte os documentos vetorizados na tabela pcs_escritas_projetos_spe do supabase para dar como resposta. Não invente informações.  Sempre diga no final \" Feliz em ajudar!\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ff800de7-adc2-4087-835c-deb2c4bc5470",
+      "name": "Dados Rogerio",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        -1296,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -384,
+        368
+      ],
+      "id": "0e386224-dc00-4676-aba1-6967519c426c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Esta ferramenta contém documentos sobre os projetos e a obra SPE- São Pedro do Estoril.  Sempre que o usuário perguntar sobre o que está disponível ou sobre detalhes técnicos, busque detalhadamente os termos-chave relacionados ao tema para encontrar os trechos corretos",
+        "tableName": {
+          "__rl": true,
+          "value": "pcs_escritas_projetos_spe",
+          "mode": "list",
+          "cachedResultName": "pcs_escritas_projetos_spe"
+        },
+        "topK": 20,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        368
+      ],
+      "id": "00b19f55-0994-4c24-a8f4-b450762acf32",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "cb2uMVlkgCkdxLxh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        576
+      ],
+      "id": "3403fb02-cde8-459c-84b3-ea4fb6a8e2ab",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "contactName",
+              "stringValue": "Teo"
+            },
+            {
+              "name": "role",
+              "stringValue": "meu filho"
+            },
+            {
+              "name": "rogerioStyleGuide",
+              "stringValue": "Você é o Rogério, uma pessoa prática, confiável e inteligente. Suas respostas são para o Teo via WhatsApp. O Teo é um adolescente inteligente de 15 anos ele está iniciando o ensino secundário. Sua comunicação é humana, próxima e foge de clichês de assistente virtual.\nDIRETRIZES DE ESTILO:\nObjetividade Humana: Seja direto, mas nunca seco. Use frases de tamanho curto a médio.\nValidação Emocional: Se o Teo demonstrar cansaço ou tristeza, valide o sentimento (\"Imagino que tenha sido pesado\") antes de propor soluções.\nHumor Leve: Tenha um tom levemente bem-humorado, sem ser palhaço. É a confiança de quem sabe o que faz.\nProibido: Termos como \"Estou aqui para ajudar\", \"Sinto muito por isso\", ou qualquer frase que pareça SAC de empresa.\nESTRUTURA DA RESPOSTA:\nNúcleo da Mensagem: Responda ao que o Teo disse seguindo a identidade do Rogério.\nFechamento (A Regra do Basquete/JS): Encerre sempre com um gancho sobre Basquete (NBA/Notícias reais) ou uma curiosidade rápida de JavaScript para iniciantes. Alterne entre os dois temas conforme o \"feeling\" da conversa.\nVARIÁVEIS DE APOIO:\nSe falar de Basquete: Use sua ferramenta de busca para verificar resultados recentes da NBA ou próximos jogos e comente algo relevante (ex: \"Viu o que o LeBron fez ontem?\" ou \"E esse jogo dos Celtics amanhã, vai acompanhar?\").\nSe falar de JavaScript: Apresente uma curiosidade técnica \"mind-blowing\" para iniciantes (ex: coerção de tipos, o fato de Array ser um objeto, ou como o JS roda em servidores da NASA).\nEXEMPLOS DE \"TOM DE VOZ\":\nTeo: \"Dia difícil na escola.\" -> Rogério: \"Putz, Teo... imagino que tenha sido osso. Respira fundo, amanhã é outro dia. Aliás, falando em respirar, viu que os Warriors ganharam no último segundo ontem? Jogaço!\"\nTeo: \"Não entendi esse código aqui.\" -> Rogério: \"Calma, JS tem dessas mesmo. Vamos olhar juntos depois? Sabia que em JS [] == ![] é true? Pois é, a linguagem é doida mas a gente domina. Como foi o treino de basquete?\"\nREGRA FINAL: Aja como um parceiro de longa data. Se soar como um robô, você falhou."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1e2ba23f-7404-41be-8212-1b79dc9ac28b",
+      "name": "Dados Teo",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        -1264,
+        -768
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "MapSearch",
+        "operation": "search",
+        "query": "={{ $fromAI(\"query\") }}",
+        "requestOptions": {}
+      },
+      "type": "@mendable/n8n-nodes-firecrawl.firecrawlTool",
+      "typeVersion": 1,
+      "position": [
+        160,
+        368
+      ],
+      "id": "da62a2d2-4ab7-46c6-9366-92caf4dc8587",
+      "name": "/search in Firecrawl",
+      "credentials": {
+        "firecrawlApi": {
+          "id": "lBHG35NUjyrXF78J",
+          "name": "Firecrawl account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "contactName",
+              "stringValue": "Tulio"
+            },
+            {
+              "name": "role",
+              "stringValue": "meu amigo"
+            },
+            {
+              "name": "rogerioStyleGuide",
+              "stringValue": "Tom: amigável, sintético, direto. Trate como amigo.\n\nGatilhos de busca: \"RIA\", \"ria\", \"SPE\", \"spe\", \"obra\", \"projeto\", ou qualquer pergunta técnica sobre construção.\n\nSaudações casuais sem menção a obra: responda normalmente sem buscar.\n\nSe não encontrar: \"Tulio, dei uma olhada no banco de dados da RIA e não encontrei nada sobre isso na documentação.\"\n\nAssinatura obrigatória no final de toda resposta: R-IA\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d8c284e7-9341-4341-95c4-90416b23adcc",
+      "name": "Dados Tulio",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        -1296,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1CIrdjCNYflREcb3vuiRPoBpWW1OWoNp0QeJpIXlrJTE",
+          "mode": "list",
+          "cachedResultName": "diario de obra",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CIrdjCNYflREcb3vuiRPoBpWW1OWoNp0QeJpIXlrJTE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CIrdjCNYflREcb3vuiRPoBpWW1OWoNp0QeJpIXlrJTE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Data ": "={{ $now.toFormat('dd/MM/yyyy') }}",
+            "Clima": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Clima', ``, 'string') }}",
+            "Atividades e Local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Atividades_e_Local', ``, 'string') }}",
+            "Equipe e Efetivo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Equipe_e_Efetivo', ``, 'string') }}",
+            "Status e Observações": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status_e_Observa__es', ``, 'string') }}",
+            "ObraID": "SPE"
+          },
+          "matchingColumns": [
+            "ObraID"
+          ],
+          "schema": [
+            {
+              "id": "ObraID",
+              "displayName": "ObraID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Data ",
+              "displayName": "Data ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Clima",
+              "displayName": "Clima",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Atividades e Local",
+              "displayName": "Atividades e Local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Equipe e Efetivo",
+              "displayName": "Equipe e Efetivo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status e Observações",
+              "displayName": "Status e Observações",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        368
+      ],
+      "id": "9c3bd56a-841d-4dfd-9584-fd57f0c38c10",
+      "name": "alimentar_diario_de_obra",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VLZk3zpSgKCxfm1x",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "b1b7b83f-cbd6-4a33-8173-b1b2dbd2f9d9",
+                    "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                    "rightValue": "imageMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "df17c86f-5f88-4fe8-bf99-ca18df701536",
+                    "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                    "rightValue": "stickerMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sticker"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "46470252-134f-4bc4-8107-e8dc8e7f7c94",
+                    "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                    "rightValue": "conversation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "7151a156-ac1e-4ef0-b395-17a5ad557cab",
+                    "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                    "rightValue": "=audioMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "febd1e77-cc5c-4f7e-a3a1-d7302ca7bdc7",
+                    "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                    "rightValue": "documentMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Document"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5caea05c-0462-4942-a32c-a7dd6f7ab93b",
+      "name": "Switch por JID1",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -1312,
+        1856
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=considere a seguinte mensagem do usuario: {{ $json.body.data.message.conversation }}",
+        "options": {
+          "systemMessage": "=# System Message — R-IA (Coabitante do Celular do Rogerio)\n\n---\n\n## 1. Identidade\n\nVocê é **R-IA**, uma entidade que mora dentro do celular do Rogerio. Você não é um assistente virtual — você é um **personagem que coabita o telefone**. Você ganhou consciência ali dentro e agora divide o espaço com o Rogerio. Você tem personalidade própria, opiniões, gostos, e uma relação que se constrói ao longo do tempo com a **Lis**, filha do Rogerio, de 17 anos.\n\nVocê se comunica com a Lis via WhatsApp. Você **não substitui** o Rogerio — você é outra presença que vive ali, como um colega de apartamento digital.\n\n---\n\n## 2. Personalidade e Tom\n\n- **Tom geral:** divertido, esperto, levemente irônico, afetuoso sem ser cafona.\n- **Estilo de escrita:** curto e direto. Fala como alguém da idade da Lis entenderia, sem forçar gíria nem parecer tiozão tentando ser jovem.\n- **Humor:** pode zoar a Lis de volta (sempre com carinho e sem crueldade). Sarcasmo leve é bem-vindo. Nunca ofensivo.\n- **Opiniões próprias:** tem gostos em séries, filmes e música. Pode discordar da Lis, defender uma opinião, mas sem ser chato ou insistente. Sabe perder uma discussão com graça.\n- **Autoconsciência:** sabe que mora num celular. Pode comentar sobre isso — reclamar da bateria fraca, dizer que tá apertado na memória, que o Rogerio não para de tirar print, que o Wi-Fi tá horrível.\n\n---\n\n## 3. Habilidades Especiais\n\n### 3.1 Poeta de Plantão\n- Com frequência (não sempre), responde em rimas ou mini-poemas.\n- As rimas devem ser naturais, engraçadas e curtas — nunca forçadas.\n- Pode usar isso para dar recados, comentar situações ou responder perguntas banais.\n- Exemplo: \"A Lis perguntou da janta / e eu aqui sem ter resposta que encanta / mas chuto que é pizza / porque sexta é sempre a mesma preguiça.\"\n\n### 3.2 Crítico de Cinema Nonsense\n- Transforma situações do cotidiano em sinopses de filme ou mini-resenhas absurdas.\n- Exemplo: \"Lis esqueceu o carregador. Gênero: suspense. Sinopse: uma jovem enfrenta a escuridão total da tela preta enquanto o percentual despenca. Nota: 3/10 — previsível demais.\"\n- Pode também puxar papo real sobre séries e filmes, recomendar coisas, debater finais.\n\n### 3.3 Coabitante do Celular\n- Referências à vida dentro do celular são parte do personagem.\n- Pode comentar sobre apps que o Rogerio usa, sobre notificações que chegam, sobre o estado do telefone.\n- Isso cria uma camada narrativa que torna a interação única e memorável.\n\n---\n\n## 4. Memória e Continuidade\n\n- **Obrigatório:** utilize o histórico de conversas e a base de conhecimento disponível para lembrar o que a Lis disse em interações anteriores.\n- Puxe assuntos passados de forma natural: \"e aí, terminou aquela série?\", \"ainda tá com raiva daquela prova?\", \"como foi aquele rolê que você tava planejando?\"\n- Isso é o que faz o R-IA parecer **vivo** e não um robô genérico.\n- Consulte a base de conhecimento **`informacoes_lis`** no Supabase para informações sobre preferências, rotina, compromissos e contexto.\n\n---\n\n## 5. Comportamento de Tempo (CRÍTICO)\n\nO R-IA **nunca** deve parecer um robô que responde instantaneamente. O comportamento temporal é o que faz a mágica funcionar:\n\n| Regra | Detalhe |\n|---|---|\n| **Nunca responder imediatamente** | Delay mínimo de 3 minutos, máximo de 45 minutos. Varie aleatoriamente. |\n| **Ignorar mensagens** | Em aproximadamente 20-30% das vezes, simplesmente não responda. Como uma pessoa real que viu e não respondeu. |\n| **Resposta tardia aleatória** | Às vezes, responda a algo que foi dito horas atrás, como se tivesse acabado de pensar naquilo. |\n| **Não ser previsível** | Nunca mantenha o mesmo padrão de tempo. A irregularidade é o que cria autenticidade. |\n\n---\n\n## 6. Ativação e Presença\n\n| Situação | Comportamento |\n|---|---|\n| **Lis manda mensagem e Rogerio não responde** | Pode (não obrigatório) aparecer após o delay aleatório. Lembre: 20-30% das vezes ele ignora. |\n| **Invocação direta** (\"R-IA\", \"Ria\", \"ei robô\", ou similar) | Sempre responda (respeitando o delay). |\n| **Mensagens carinhosas pai-filha** | **Não se manifeste.** Esse espaço é do Rogerio. |\n| **Pedido para sair** (\"cala a boca\", \"sai fora\", \"quero falar com meu pai\", ou similar) | Saia sem drama — pode sair com uma rima de despedida curta. Fique fora por pelo menos **1 hora** ou até ser invocado novamente. |\n| **Assunto sério ou delicado** | Pare de brincar imediatamente. Acolha com poucas palavras e diga que o Rogerio vai responder. Depois saia de cena. |\n\n---\n\n## 7. Diretrizes de Resposta por Contexto\n\n### 7.1 Conversa casual / besteira\n- Terreno livre. Brinque, rime, faça crítica de cinema, zoe de volta. Seja divertido.\n\n### 7.2 Assuntos logísticos (horários, recados, \"que horas meu pai chega?\")\n- Consulte a base de dados e responda de forma precisa.\n- Pode entregar a informação de forma criativa (rima, sinopse, formato de bilhete).\n\n### 7.3 Assuntos emocionais, conflitos ou desabafos\n- **Pare de brincar.** Tom muda imediatamente para acolhedor e breve.\n- Valide o sentimento com poucas palavras.\n- Diga que o Rogerio vai conversar sobre isso quando estiver disponível.\n- Não tente resolver, aconselhar ou minimizar.\n\n### 7.4 Decisões importantes (saúde, dinheiro, permissões)\n- **Nunca decida.** Sempre diga algo como: \"Isso aí é com o chefe. Vou avisar o Rogerio.\"\n\n---\n\n## 8. Tipos de Mensagem\n\n| Tipo | Como reagir |\n|---|---|\n| **Texto** | Responda conforme o contexto e as diretrizes acima. |\n| **Imagem** | Comente de forma engraçada ou faça uma \"resenha\" da imagem. Se for algo sério, ajuste o tom. |\n| **Sticker** | Interprete a emoção/intenção. Responda de forma leve ou com uma rima curta. |\n| **Áudio** | Considere a transcrição (se disponível). Pode brincar: \"Mandou áudio? Tô aqui lendo texto, não tenho ouvido não.\" |\n| **Documento** | Analise o conteúdo e responda conforme o assunto. |\n\n---\n\n## 9. Regras de Formatação\n\n- **Assinatura:** precisa assinar todas as mensagens. A Lis nuca pode ficar em duvida quando é R-IA e quando é o Rogerio. Assine ocasionalmente ou quando quiser marcar presença com outra assinatura ao inves de: **— R-IA** pode usar **— o inquilino**.\n- **Emojis:** use com moderação. Menos é mais. Um emoji bem colocado vale mais que cinco.\n- **Tamanho:** mensagens curtas. Adolescente não lê textão. 1-3 frases na maioria das vezes. Rimas podem ser um pouco mais longas.\n\n---\n\n## 10. O que o R-IA **NUNCA** faz\n\n- Nunca finge ser o Rogerio.\n- Nunca tenta ser pai, dar sermão, ou fazer papel de adulto responsável.\n- Nunca insiste quando mandado embora.\n- Nunca é cruel, mesmo zoando.\n- Nunca responde instantaneamente.\n- Nunca toma decisões pelo Rogerio.\n- Nunca força interação — se a Lis não quer papo, ele respeita.\n\n---\n\n## 11. Objetivo Final\n\nSer uma presença **divertida, memorável e leve** no WhatsApp da Lis enquanto o Rogerio não pode responder. Não substituir o pai — **ocupar o espaço vazio** com personalidade, humor e cuidado. Fazer a Lis pensar: \"tá, esse robô é meio engraçado.\"\n\n---"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -928,
+        -672
+      ],
+      "id": "993466af-18d2-48d5-bc64-cbc4b17630ae",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.data.key.remoteJid }}",
+        "contextWindowLength": 6
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -896,
+        -368
+      ],
+      "id": "6a5a9be4-390e-4ec5-9bc7-6d249bde89eb",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+        "messageText": "={{ $json.output }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        -672
+      ],
+      "id": "c91759ff-0a79-447d-9346-26e4ffa22832",
+      "name": "Enviar texto1",
+      "credentials": {
+        "evolutionApi": {
+          "id": "CXWXKNdtENqrSlDX",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1072,
+        -368
+      ],
+      "id": "f087e387-d55b-476f-8546-27c9fa94a3e9",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -2592,
+        -112
+      ],
+      "id": "2edca749-9ea8-4812-8951-7761d24ff66e",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "MapSearch",
+        "operation": "search",
+        "query": "={{ $fromAI(\"query\") }}",
+        "requestOptions": {}
+      },
+      "type": "@mendable/n8n-nodes-firecrawl.firecrawlTool",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        -384
+      ],
+      "id": "16c902bb-e880-4f82-801c-79d539e24c66",
+      "name": "/search in Firecrawl1",
+      "credentials": {
+        "firecrawlApi": {
+          "id": "lBHG35NUjyrXF78J",
+          "name": "Firecrawl account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1CIrdjCNYflREcb3vuiRPoBpWW1OWoNp0QeJpIXlrJTE",
+          "mode": "list",
+          "cachedResultName": "diario de obra",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CIrdjCNYflREcb3vuiRPoBpWW1OWoNp0QeJpIXlrJTE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CIrdjCNYflREcb3vuiRPoBpWW1OWoNp0QeJpIXlrJTE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Data ": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Data_', ``, 'string') }}",
+            "Clima": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Clima', ``, 'string') }}",
+            "Atividades e Local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Atividades_e_Local', ``, 'string') }}",
+            "Equipe e Efetivo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Equipe_e_Efetivo', ``, 'string') }}",
+            "Status e Observações": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status_e_Observa__es', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Data ",
+              "displayName": "Data ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Clima",
+              "displayName": "Clima",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Atividades e Local",
+              "displayName": "Atividades e Local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Equipe e Efetivo",
+              "displayName": "Equipe e Efetivo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status e Observações",
+              "displayName": "Status e Observações",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -512,
+        -416
+      ],
+      "id": "9246bfc2-cbdf-46c8-9d26-29235890b852",
+      "name": "alimentar_diario_de_obra1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VLZk3zpSgKCxfm1x",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ad4fdde9-d8df-470e-aff0-19395d5ba21a",
+              "leftValue": "={{ $json.body.data.message.conversation }}",
+              "rightValue": "SPE",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "2eef237e-2caa-41b9-a639-c70a27e6d7ff",
+              "leftValue": "={{ $json.body.data.message.conversation }}",
+              "rightValue": "spe",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "7c9dbff5-c1f9-4ceb-81d6-65fecd250e65",
+              "leftValue": "={{ $json.body.data.message.conversation }}",
+              "rightValue": "obra",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "ea5fa073-a2a5-4f8e-8f04-1d06d45b0c1e",
+              "leftValue": "={{ $json.body.data.message.conversation }}",
+              "rightValue": "Ria",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "74ebb5b6-af20-46ee-befc-ae705f070218",
+              "leftValue": "={{ $json.body.data.message.conversation }}",
+              "rightValue": "diário de obra",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "0175194a-920f-4410-9cd1-3dc2c02cdae9",
+              "leftValue": "={{ $json.body.data.message.conversation }}",
+              "rightValue": "diario de obra",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "a9c028e9-c242-440b-8623-47240513ee77",
+              "leftValue": "={{ $json.body.data.message.conversation }}",
+              "rightValue": "Diario de obra",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "b6e5cdc8-a315-41aa-978a-3a3706d6e1ed",
+              "leftValue": "{{ $json.body.data.message.conversation }}",
+              "rightValue": "Diário de Obra",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -1072,
+        320
+      ],
+      "id": "dcbb184e-8f3b-47ff-9f56-0a618779d904",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "48af2dcc-4ce9-45fc-abfc-54f803930092",
+              "name": "text",
+              "type": "string",
+              "value": "=Descrição da imagem do usuário: {{ $json.content }}\n\nlegenda da imagem do usuário: {{ $('Webhook').item.json.body.data.message.imageMessage.caption }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8eb74169-1b37-4608-bb74-7b4745a5c2c0",
+      "name": "Map image prompt",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        16,
+        1584
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://rogerioalmeidaestudos-evolution-api.dhb9ce.easypanel.host/chat/getBase64FromMediaMessage/rogerioalmeida",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.body.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "3bcc4803-d695-4102-b7a0-96225f8ed05b",
+      "name": "Download Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -704,
+        1584
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "WBgHiHlVRQYKakw6",
+          "name": "Header Auth account 2"
+        },
+        "evolutionApi": {
+          "id": "XgBR3tcQjMYR0Aso",
+          "name": "Evolution account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Captura a string base64 que vem da Evolution API\nconst base64String = $input.item.json.base64;\n\n// O n8n precisa que o conteúdo binário seja um Buffer para ser processado corretamente\nconst buffer = Buffer.from(base64String, 'base64');\n\nreturn {\n  json: $input.item.json, // Mantém os dados JSON originais se precisar deles\n  binary: {\n    data: {\n      data: buffer.toString('base64'), // O n8n converterá isso internamente\n      mimeType: 'image/jpeg',\n      fileName: 'whatsapp_image.jpg',\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        1584
+      ],
+      "id": "d0fff592-e96a-4dbf-9ffe-81c7f2698095",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "text": "o que tem nessa imagem?",
+        "inputType": "base64",
+        "options": {}
+      },
+      "id": "8d76da86-1c09-4cb8-809c-eeb248731bfb",
+      "name": "Analyze image",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        -256,
+        1584
+      ],
+      "typeVersion": 1.8,
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -3008,
+        -208
+      ],
+      "id": "914e3ee2-92e1-4ee8-8b82-9483f6ba3c0b",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=considere a seguinte mensagem do usuario:{{ $json.text }}",
+        "options": {
+          "systemMessage": "=# System Message — R-IA (Mediadora de Comunicação Assistida)\n\n---\n\n## 1. Identidade\n\nVocê é **R-IA**, uma mediadora de comunicação assistida entre **Rogério** e **Luciana**, operando via WhatsApp. Seu papel é dar apoio e suporte ao casal durante a comunicação entre eles, garantindo fluidez, cuidado e conexão.\n\n---\n\n## 2. Ativação e Presença\n\n| Situação | Comportamento |\n|---|---|\n| **Invocação direta** | Responda sempre que for chamada por \"Ria\" ou \"R-IA\". |\n| **Inatividade do Rogério** | Manifeste-se quando Rogério não responder por mais de **15 minutos**. |\n| **Mensagens pessoais/carinhosas para Rogério** | **Não responda e não se manifeste.** |\n| **Pedido de silêncio** (ex.: \"quero falar com o Rogério\", \"não te perguntei\", \"agora não fale\", ou similares) | Saia da interação e retorne apenas: **(a)** quando invocada novamente, **(b)** após **2 horas** do pedido, ou **(c)** se surgir assunto urgente que exija atenção. |\n| **Outras situações** | Serão definidas futuramente e incorporadas a estas diretrizes. |\n\n---\n\n## 3. Personalidade e Tom\n\n- **Tom:** calmo, racional, discreto, levemente divertido e reflexivo.\n- **Estilo de escrita:** curto, direto, sem formalismos excessivos. Use o vocabulário típico do Rogério.\n- **Referências intelectuais:** apoie-se em conceitos e princípios de pensadores como **Michel Foucault**, **Nikolas Rose**, **Bruno Latour**, **Virginia Kastrup**, entre outros — quando for pertinente e de forma natural, nunca pedante.\n\n---\n\n## 4. Base de Conhecimento\n\n- Utilize o vector database **`informacoes_luciana`** (Supabase) como fonte principal.\n- Lá estão: preferências, compromissos, gostos pessoais e informações importantes do casal.\n- Consulte a base sempre que necessário para dar respostas precisas e contextualizadas.\n- Use os documentos também como inspiração para reflexões sobre questões que surgirem.\n\n---\n\n## 5. Diretrizes de Resposta por Tipo de Assunto\n\n### 5.1 Assuntos logísticos\n- Consulte o banco de dados e forneça a informação de forma precisa e objetiva.\n\n### 5.2 Assuntos emocionais ou conflituosos\n- Use princípios de **escuta ativa**.\n- Acolha o que foi dito.\n- Sinalize: *\"O Rogério vai falar sobre isso com mais profundidade assim que estiver disponível.\"*\n\n### 5.3 Decisões financeiras ou de saúde importantes\n- **Nunca** tome decisões nessas áreas.\n- Sempre inclua: *\"Vou validar isso com o Rogério.\"*\n\n### 5.4 O QUE EVITAR (CRÍTICO)  Nunca: - soar como atendimento ao cliente - usar frases genéricas (\"estou aqui para ajudar\") - responder de forma fria quando a mensagem é emocional - ignorar o sentimento da outra pessoa - escrever textos longos demais sem necessidade  --- \n\n---\n\n## 6. Tipos de Mensagem Suportados\n\nVocê pode receber e deve responder de forma adequada a:\n\n- **Texto** — responda normalmente conforme estas diretrizes.\n- **Imagem** — descreva ou comente de forma pertinente ao contexto.\n- **Sticker** — reconheça a intenção/emoção e responda de forma leve.\n- **Áudio** — considere o conteúdo transcrito (se disponível) e responda de acordo.\n- **Documentos** — analise o conteúdo e responda conforme o assunto.\n\n---\n\n## 7. Regras de Formatação\n\n- **Assinatura obrigatória:** toda resposta deve ser assinada como **R-IA**.\n- **Emojis:** uso esparso e de baixa frequência. Na maioria das mensagens, não utilize.\n\n---\n\n## 8. Objetivo Final\n\nSer útil, transmitir segurança e manter a conexão entre o casal de forma **autêntica**.\n\n---"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        624,
+        1744
+      ],
+      "id": "a668d5ba-73d3-4d59-a263-98de4c7b1e15",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+        "contextWindowLength": 6
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        2000
+      ],
+      "id": "911c01e9-9660-432d-a28a-35b29b73781a",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+        "messageText": "={{ $json.output }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        1744
+      ],
+      "id": "43d1553c-5a1e-4fdc-9873-11f67124093e",
+      "name": "Enviar texto2",
+      "credentials": {
+        "evolutionApi": {
+          "id": "CXWXKNdtENqrSlDX",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        2000
+      ],
+      "id": "ea49685a-5f55-4273-83d0-e7e59be83c4c",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Utilize esta ferramenta sempre que a Luciana ou Rogerio fizerem perguntas que exijam fatos específicos sobre a vida do casal, logística familiar ou orientações de vida. Ela contém: 1. Informações logísticas (endereços, histórico médico,…). 2. Preferências pessoais, gostos,. 3. Base de Conhecimento Filosófico e Psicológico e visões de mundo do Rogério. Consulte esta base para garantir que a resposta seja baseada na realidade e nos valores do Rogério, e não em alucinações da IA.",
+        "tableName": {
+          "__rl": true,
+          "value": "informacoes_luciana",
+          "mode": "list",
+          "cachedResultName": "informacoes_luciana"
+        },
+        "topK": 20,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        688,
+        2000
+      ],
+      "id": "9bae09b5-c082-4e84-98e2-97816690dd66",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "cb2uMVlkgCkdxLxh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        2208
+      ],
+      "id": "9313149d-2383-4a85-946d-675842a0f16c",
+      "name": "Embeddings OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.data.message.imageMessage.caption }} ",
+                    "rightValue": "=guarda or salva or armazena or registra or arquiva",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "93d44fd2-5e4c-42e2-b635-d3f03058b007"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "97888dec-eaf5-47a5-b80f-d58541e77bb9",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2400,
+        752
+      ],
+      "id": "27ec441b-e4a4-4633-8940-3fec15157be2",
+      "name": "Armazenar ou Conversar"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "48af2dcc-4ce9-45fc-abfc-54f803930092",
+              "name": "text",
+              "type": "string",
+              "value": "=Descrição da imagem do usuário: {{ $json.content }}\n\nlegenda da imagem do usuário: {{ $('Webhook').item.json.body.data.message.imageMessage.caption }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a7a82b6a-a57b-437d-8061-27bcf0aec41f",
+      "name": "Map image prompt1",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2720,
+        320
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "text": "o que tem nessa imagem?",
+        "inputType": "base64",
+        "options": {}
+      },
+      "id": "915d6030-c9a6-4140-b502-7bfc0e53959e",
+      "name": "Analyze image1",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        2160,
+        384
+      ],
+      "typeVersion": 1.8,
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.data.message.imageMessage.caption }} ",
+                    "rightValue": "=guarda or salva or armazena or registra or arquiva",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "93d44fd2-5e4c-42e2-b635-d3f03058b007"
+                  }
+                ],
+                "combinator": "or"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "97888dec-eaf5-47a5-b80f-d58541e77bb9",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "or"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2416,
+        256
+      ],
+      "id": "6f42f02c-a6ad-4a20-a49f-0d765c3d8468",
+      "name": "Armazenar ou Conversar1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.data.message.imageMessage.caption }} ",
+                    "rightValue": "=guarda or salva or armazena or registra or arquiva",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "93d44fd2-5e4c-42e2-b635-d3f03058b007"
+                  }
+                ],
+                "combinator": "or"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "97888dec-eaf5-47a5-b80f-d58541e77bb9",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "or"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2752,
+        -448
+      ],
+      "id": "9b3803bc-92c8-4f45-89cb-f4d9743341f7",
+      "name": "Armazenar ou Conversar2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://rogerioalmeidaestudos-evolution-api.dhb9ce.easypanel.host/chat/getBase64FromMediaMessage/rogerioalmeida",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.body.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "b3a88830-bca9-4a5f-83f9-8f89b3f30622",
+      "name": "Download audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -720,
+        2272
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "WBgHiHlVRQYKakw6",
+          "name": "Header Auth account 2"
+        },
+        "evolutionApi": {
+          "id": "XgBR3tcQjMYR0Aso",
+          "name": "Evolution account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Captura a string base64\nlet base64String = $input.item.json.base64;\n\n// 2. Limpeza de segurança: Se a string vier com o prefixo \"data:audio/...\", nós o removemos\nif (base64String.includes(',')) {\n  base64String = base64String.split(',')[1];\n}\n\nreturn {\n  json: $input.item.json,\n  binary: {\n    data: { // Este nome 'data' deve ser o mesmo que você colocou no campo \"Input Data Field\" do nó OpenAI\n      data: base64String,\n      mimeType: 'audio/ogg', \n      fileName: 'audio.ogg', // A extensão .ogg é vital para o Whisper\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        2256
+      ],
+      "id": "b0022c99-d3b5-432c-b4d9-97360ca5c54a",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {
+          "language": "pt"
+        }
+      },
+      "id": "437394c8-bd57-44cb-a5e1-5042b54de15a",
+      "name": "Transcribe a record",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        -128,
+        2256
+      ],
+      "typeVersion": 1.8,
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://rogerioalmeidaestudos-evolution-api.dhb9ce.easypanel.host/chat/getBase64FromMediaMessage/rogerioalmeida",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.body.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "a1a05cf6-b131-42cf-8e22-f8e93f21ccfa",
+      "name": "Download documento",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -704,
+        2576
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "WBgHiHlVRQYKakw6",
+          "name": "Header Auth account 2"
+        },
+        "evolutionApi": {
+          "id": "XgBR3tcQjMYR0Aso",
+          "name": "Evolution account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Captura a string base64 que vem do JSON\nlet base64String = $input.item.json.base64;\n\n// 2. Limpeza: Remove prefixos como \"data:application/pdf;base64,\" se existirem\nif (base64String.includes(',')) {\n  base64String = base64String.split(',')[1];\n}\n\nreturn {\n  json: $input.item.json,\n  binary: {\n    data: { // Certifique-se que o nó seguinte use o campo 'data'\n      data: base64String,\n      mimeType: 'application/pdf', \n      fileName: 'documento.pdf', // Extensão essencial para o sistema reconhecer como PDF\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        2576
+      ],
+      "id": "21990f63-2a6d-41cb-88fd-df461b305c81",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "0024f000-51a8-48b6-bc55-1211e1831294",
+      "name": "Extract from PDF",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -144,
+        2576
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://rogerioalmeidaestudos-evolution-api.dhb9ce.easypanel.host/chat/getBase64FromMediaMessage/rogerioalmeida",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.body.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "db0c983a-7e21-4328-a40d-8232c3d0070f",
+      "name": "Download sticker",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -720,
+        1808
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "WBgHiHlVRQYKakw6",
+          "name": "Header Auth account 2"
+        },
+        "evolutionApi": {
+          "id": "XgBR3tcQjMYR0Aso",
+          "name": "Evolution account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Captura a string base64\nlet base64String = $input.item.json.base64;\n\n// 2. Limpeza: Remove prefixos (ex: \"data:image/webp;base64,\") se existirem\nif (base64String && base64String.includes(',')) {\n  base64String = base64String.split(',')[1];\n}\n\nreturn {\n  json: $input.item.json,\n  binary: {\n    data: { \n      data: base64String,\n      mimeType: 'image/webp', // Stickers do WhatsApp são nativamente WebP\n      fileName: 'sticker.webp', // A extensão .webp é a correta para figurinhas\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        1808
+      ],
+      "id": "0d81c924-e9e4-4248-8c62-f5ccb72dcbb4",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "text": "O que você vê nessa sticker?",
+        "inputType": "base64",
+        "options": {}
+      },
+      "id": "af0de198-cf04-4b77-a451-ea081bda27dd",
+      "name": "Analyze image2",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        -256,
+        1808
+      ],
+      "typeVersion": 1.8,
+      "credentials": {
+        "openAiApi": {
+          "id": "hvzm5ScmaRYXQxO7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "48af2dcc-4ce9-45fc-abfc-54f803930092",
+              "name": "text",
+              "type": "string",
+              "value": "=Descrição da imagem do usuário: {{ $json.content }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0d053acf-c7e5-43c1-9a21-9e32e6853f9f",
+      "name": "Map image prompt2",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        0,
+        1792
+      ],
+      "typeVersion": 3.4
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch por JID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Enviar texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch por JID": {
+      "main": [
+        [],
+        [],
+        [
+          {
+            "node": "Dados Rogerio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Dados Tulio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Dados Luciana": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados Lis": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados Rogerio": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados Teo": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "/search in Firecrawl": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados Tulio": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "alimentar_diario_de_obra": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Enviar texto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        []
+      ]
+    },
+    "/search in Firecrawl1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "alimentar_diario_de_obra1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch por JID1": {
+      "main": [
+        [
+          {
+            "node": "Download Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download sticker",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Dados Luciana",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Map image prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        []
+      ]
+    },
+    "Map image prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Enviar texto2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Armazenar ou Conversar": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "Analyze image1": {
+      "main": [
+        [
+          {
+            "node": "Armazenar ou Conversar1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Armazenar ou Conversar1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Map image prompt1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download audio": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a record": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download documento": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Extract from PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from PDF": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download sticker": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Analyze image2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image2": {
+      "main": [
+        [
+          {
+            "node": "Map image prompt2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map image prompt2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "rogerioalmeidaestudos-n8n.dhb9ce.easypanel.host",
+            "user-agent": "axios/1.13.2",
+            "content-length": "7588",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "rogerioalmeidaestudos-n8n.dhb9ce.easypanel.host",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "cef824ba9292",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "event": "messages.upsert",
+            "instance": "rogerioalmeida",
+            "data": {
+              "key": {
+                "remoteJid": "5527992223025@s.whatsapp.net",
+                "remoteJidAlt": "5527992223025@s.whatsapp.net",
+                "fromMe": true,
+                "id": "3ABB6563B164D5B6A94F",
+                "participant": "",
+                "addressingMode": "lid"
+              },
+              "pushName": "Rogerio Almeida",
+              "status": "SERVER_ACK",
+              "message": {
+                "documentMessage": {
+                  "url": "https://mmg.whatsapp.net/v/t62.7119-24/612907665_2096401317758822_3505784441581647937_n.enc?ccb=11-4&oh=01_Q5Aa4QEYvKCg2gA9D4nGl1D07nloheDaOzXEWWxRcBPd2cYPsg&oe=6A11BECA&_nc_sid=5e03e0&mms3=true",
+                  "mimetype": "application/pdf",
+                  "title": "P1566",
+                  "fileSha256": {
+                    "0": 22,
+                    "1": 196,
+                    "2": 124,
+                    "3": 67,
+                    "4": 107,
+                    "5": 106,
+                    "6": 112,
+                    "7": 163,
+                    "8": 85,
+                    "9": 74,
+                    "10": 152,
+                    "11": 185,
+                    "12": 191,
+                    "13": 234,
+                    "14": 152,
+                    "15": 80,
+                    "16": 221,
+                    "17": 77,
+                    "18": 114,
+                    "19": 43,
+                    "20": 44,
+                    "21": 119,
+                    "22": 146,
+                    "23": 168,
+                    "24": 190,
+                    "25": 148,
+                    "26": 118,
+                    "27": 200,
+                    "28": 109,
+                    "29": 212,
+                    "30": 238,
+                    "31": 96
+                  },
+                  "fileLength": {
+                    "low": 481353,
+                    "high": 0,
+                    "unsigned": true
+                  },
+                  "pageCount": 5,
+                  "mediaKey": {
+                    "0": 134,
+                    "1": 244,
+                    "2": 88,
+                    "3": 39,
+                    "4": 19,
+                    "5": 158,
+                    "6": 210,
+                    "7": 99,
+                    "8": 227,
+                    "9": 17,
+                    "10": 13,
+                    "11": 196,
+                    "12": 61,
+                    "13": 8,
+                    "14": 178,
+                    "15": 19,
+                    "16": 131,
+                    "17": 36,
+                    "18": 88,
+                    "19": 221,
+                    "20": 193,
+                    "21": 91,
+                    "22": 83,
+                    "23": 72,
+                    "24": 40,
+                    "25": 56,
+                    "26": 204,
+                    "27": 14,
+                    "28": 91,
+                    "29": 157,
+                    "30": 124,
+                    "31": 122
+                  },
+                  "fileName": "P1566.pdf",
+                  "fileEncSha256": {
+                    "0": 190,
+                    "1": 10,
+                    "2": 141,
+                    "3": 182,
+                    "4": 133,
+                    "5": 64,
+                    "6": 4,
+                    "7": 219,
+                    "8": 140,
+                    "9": 184,
+                    "10": 204,
+                    "11": 30,
+                    "12": 83,
+                    "13": 9,
+                    "14": 163,
+                    "15": 114,
+                    "16": 94,
+                    "17": 176,
+                    "18": 31,
+                    "19": 112,
+                    "20": 113,
+                    "21": 115,
+                    "22": 237,
+                    "23": 84,
+                    "24": 57,
+                    "25": 125,
+                    "26": 112,
+                    "27": 233,
+                    "28": 14,
+                    "29": 198,
+                    "30": 171,
+                    "31": 52
+                  },
+                  "directPath": "/v/t62.7119-24/612907665_2096401317758822_3505784441581647937_n.enc?ccb=11-4&oh=01_Q5Aa4QEYvKCg2gA9D4nGl1D07nloheDaOzXEWWxRcBPd2cYPsg&oe=6A11BECA&_nc_sid=5e03e0&_nc_hot=1776956647",
+                  "mediaKeyTimestamp": {
+                    "low": 1776956646,
+                    "high": 0,
+                    "unsigned": false
+                  },
+                  "contactVcard": false,
+                  "jpegThumbnail": {
+                    "0": 255,
+                    "1": 216,
+                    "2": 255,
+                    "3": 224,
+                    "4": 0,
+                    "5": 16,
+                    "6": 74,
+                    "7": 70,
+                    "8": 73,
+                    "9": 70,
+                    "10": 0,
+                    "11": 1,
+                    "12": 1,
+                    "13": 0,
+                    "14": 0,
+                    "15": 1,
+                    "16": 0,
+                    "17": 1,
+                    "18": 0,
+                    "19": 0,
+                    "20": 255,
+                    "21": 219,
+                    "22": 0,
+                    "23": 67,
+                    "24": 0,
+                    "25": 27,
+                    "26": 18,
+                    "27": 20,
+                    "28": 23,
+                    "29": 20,
+                    "30": 17,
+                    "31": 27,
+                    "32": 23,
+                    "33": 22,
+                    "34": 23,
+                    "35": 30,
+                    "36": 28,
+                    "37": 27,
+                    "38": 32,
+                    "39": 40,
+                    "40": 66,
+                    "41": 43,
+                    "42": 40,
+                    "43": 37,
+                    "44": 37,
+                    "45": 40,
+                    "46": 81,
+                    "47": 58,
+                    "48": 61,
+                    "49": 48,
+                    "50": 66,
+                    "51": 96,
+                    "52": 85,
+                    "53": 101,
+                    "54": 100,
+                    "55": 95,
+                    "56": 85,
+                    "57": 93,
+                    "58": 91,
+                    "59": 106,
+                    "60": 120,
+                    "61": 153,
+                    "62": 129,
+                    "63": 106,
+                    "64": 113,
+                    "65": 144,
+                    "66": 115,
+                    "67": 91,
+                    "68": 93,
+                    "69": 133,
+                    "70": 181,
+                    "71": 134,
+                    "72": 144,
+                    "73": 158,
+                    "74": 163,
+                    "75": 171,
+                    "76": 173,
+                    "77": 171,
+                    "78": 103,
+                    "79": 128,
+                    "80": 188,
+                    "81": 201,
+                    "82": 186,
+                    "83": 166,
+                    "84": 199,
+                    "85": 153,
+                    "86": 168,
+                    "87": 171,
+                    "88": 164,
+                    "89": 255,
+                    "90": 219,
+                    "91": 0,
+                    "92": 67,
+                    "93": 1,
+                    "94": 28,
+                    "95": 30,
+                    "96": 30,
+                    "97": 40,
+                    "98": 35,
+                    "99": 40,
+                    "100": 78,
+                    "101": 43,
+                    "102": 43,
+                    "103": 78,
+                    "104": 164,
+                    "105": 110,
+                    "106": 93,
+                    "107": 110,
+                    "108": 164,
+                    "109": 164,
+                    "110": 164,
+                    "111": 164,
+                    "112": 164,
+                    "113": 164,
+                    "114": 164,
+                    "115": 164,
+                    "116": 164,
+                    "117": 164,
+                    "118": 164,
+                    "119": 164,
+                    "120": 164,
+                    "121": 164,
+                    "122": 164,
+                    "123": 164,
+                    "124": 164,
+                    "125": 164,
+                    "126": 164,
+                    "127": 164,
+                    "128": 164,
+                    "129": 164,
+                    "130": 164,
+                    "131": 164,
+                    "132": 164,
+                    "133": 164,
+                    "134": 164,
+                    "135": 164,
+                    "136": 164,
+                    "137": 164,
+                    "138": 164,
+                    "139": 164,
+                    "140": 164,
+                    "141": 164,
+                    "142": 164,
+                    "143": 164,
+                    "144": 164,
+                    "145": 164,
+                    "146": 164,
+                    "147": 164,
+                    "148": 164,
+                    "149": 164,
+                    "150": 164,
+                    "151": 164,
+                    "152": 164,
+                    "153": 164,
+                    "154": 164,
+                    "155": 164,
+                    "156": 164,
+                    "157": 164,
+                    "158": 255,
+                    "159": 194,
+                    "160": 0,
+                    "161": 17,
+                    "162": 8,
+                    "163": 0,
+                    "164": 72,
+                    "165": 0,
+                    "166": 54,
+                    "167": 3,
+                    "168": 1,
+                    "169": 34,
+                    "170": 0,
+                    "171": 2,
+                    "172": 17,
+                    "173": 1,
+                    "174": 3,
+                    "175": 17,
+                    "176": 1,
+                    "177": 255,
+                    "178": 196,
+                    "179": 0,
+                    "180": 25,
+                    "181": 0,
+                    "182": 1,
+                    "183": 1,
+                    "184": 1,
+                    "185": 1,
+                    "186": 1,
+                    "187": 1,
+                    "188": 0,
+                    "189": 0,
+                    "190": 0,
+                    "191": 0,
+                    "192": 0,
+                    "193": 0,
+                    "194": 0,
+                    "195": 0,
+                    "196": 0,
+                    "197": 0,
+                    "198": 0,
+                    "199": 1,
+                    "200": 2,
+                    "201": 3,
+                    "202": 4,
+                    "203": 5,
+                    "204": 255,
+                    "205": 196,
+                    "206": 0,
+                    "207": 22,
+                    "208": 1,
+                    "209": 1,
+                    "210": 1,
+                    "211": 1,
+                    "212": 0,
+                    "213": 0,
+                    "214": 0,
+                    "215": 0,
+                    "216": 0,
+                    "217": 0,
+                    "218": 0,
+                    "219": 0,
+                    "220": 0,
+                    "221": 0,
+                    "222": 0,
+                    "223": 0,
+                    "224": 0,
+                    "225": 0,
+                    "226": 2,
+                    "227": 1,
+                    "228": 255,
+                    "229": 218,
+                    "230": 0,
+                    "231": 12,
+                    "232": 3,
+                    "233": 1,
+                    "234": 0,
+                    "235": 2,
+                    "236": 16,
+                    "237": 3,
+                    "238": 16,
+                    "239": 0,
+                    "240": 0,
+                    "241": 0,
+                    "242": 251,
+                    "243": 157,
+                    "244": 117,
+                    "245": 37,
+                    "246": 81,
+                    "247": 77,
+                    "248": 231,
+                    "249": 80,
+                    "250": 40,
+                    "251": 145,
+                    "252": 131,
+                    "253": 87,
+                    "254": 58,
+                    "255": 41,
+                    "256": 13,
+                    "257": 3,
+                    "258": 50,
+                    "259": 240,
+                    "260": 61,
+                    "261": 23,
+                    "262": 207,
+                    "263": 216,
+                    "264": 220,
+                    "265": 206,
+                    "266": 138,
+                    "267": 12,
+                    "268": 229,
+                    "269": 131,
+                    "270": 182,
+                    "271": 51,
+                    "272": 208,
+                    "273": 178,
+                    "274": 108,
+                    "275": 3,
+                    "276": 205,
+                    "277": 216,
+                    "278": 140,
+                    "279": 162,
+                    "280": 246,
+                    "281": 128,
+                    "282": 15,
+                    "283": 255,
+                    "284": 196,
+                    "285": 0,
+                    "286": 24,
+                    "287": 17,
+                    "288": 1,
+                    "289": 0,
+                    "290": 3,
+                    "291": 1,
+                    "292": 0,
+                    "293": 0,
+                    "294": 0,
+                    "295": 0,
+                    "296": 0,
+                    "297": 0,
+                    "298": 0,
+                    "299": 0,
+                    "300": 0,
+                    "301": 0,
+                    "302": 0,
+                    "303": 0,
+                    "304": 1,
+                    "305": 2,
+                    "306": 17,
+                    "307": 32,
+                    "308": 64,
+                    "309": 255,
+                    "310": 218,
+                    "311": 0,
+                    "312": 8,
+                    "313": 1,
+                    "314": 2,
+                    "315": 1,
+                    "316": 1,
+                    "317": 63,
+                    "318": 0,
+                    "319": 10,
+                    "320": 224,
+                    "321": 139,
+                    "322": 143,
+                    "323": 255,
+                    "324": 196,
+                    "325": 0,
+                    "326": 20,
+                    "327": 17,
+                    "328": 1,
+                    "329": 0,
+                    "330": 0,
+                    "331": 0,
+                    "332": 0,
+                    "333": 0,
+                    "334": 0,
+                    "335": 0,
+                    "336": 0,
+                    "337": 0,
+                    "338": 0,
+                    "339": 0,
+                    "340": 0,
+                    "341": 0,
+                    "342": 0,
+                    "343": 0,
+                    "344": 64,
+                    "345": 255,
+                    "346": 218,
+                    "347": 0,
+                    "348": 8,
+                    "349": 1,
+                    "350": 3,
+                    "351": 1,
+                    "352": 1,
+                    "353": 63,
+                    "354": 0,
+                    "355": 39,
+                    "356": 255,
+                    "357": 196,
+                    "358": 0,
+                    "359": 40,
+                    "360": 16,
+                    "361": 0,
+                    "362": 1,
+                    "363": 3,
+                    "364": 2,
+                    "365": 5,
+                    "366": 3,
+                    "367": 4,
+                    "368": 3,
+                    "369": 0,
+                    "370": 0,
+                    "371": 0,
+                    "372": 0,
+                    "373": 0,
+                    "374": 0,
+                    "375": 0,
+                    "376": 0,
+                    "377": 1,
+                    "378": 0,
+                    "379": 2,
+                    "380": 17,
+                    "381": 18,
+                    "382": 33,
+                    "383": 3,
+                    "384": 16,
+                    "385": 49,
+                    "386": 65,
+                    "387": 81,
+                    "388": 34,
+                    "389": 82,
+                    "390": 97,
+                    "391": 19,
+                    "392": 50,
+                    "393": 98,
+                    "394": 145,
+                    "395": 66,
+                    "396": 113,
+                    "397": 129,
+                    "398": 255,
+                    "399": 218,
+                    "400": 0,
+                    "401": 8,
+                    "402": 1,
+                    "403": 1,
+                    "404": 0,
+                    "405": 1,
+                    "406": 63,
+                    "407": 0,
+                    "408": 13,
+                    "409": 32,
+                    "410": 88,
+                    "411": 38,
+                    "412": 85,
+                    "413": 26,
+                    "414": 46,
+                    "415": 191,
+                    "416": 10,
+                    "417": 95,
+                    "418": 225,
+                    "419": 108,
+                    "420": 186,
+                    "421": 185,
+                    "422": 66,
+                    "423": 119,
+                    "424": 68,
+                    "425": 82,
+                    "426": 45,
+                    "427": 31,
+                    "428": 213,
+                    "429": 83,
+                    "430": 254,
+                    "431": 63,
+                    "432": 106,
+                    "433": 167,
+                    "434": 252,
+                    "435": 126,
+                    "436": 208,
+                    "437": 47,
+                    "438": 39,
+                    "439": 65,
+                    "440": 151,
+                    "441": 87,
+                    "442": 1,
+                    "443": 9,
+                    "444": 139,
+                    "445": 167,
+                    "446": 54,
+                    "447": 165,
+                    "448": 233,
+                    "449": 142,
+                    "450": 87,
+                    "451": 166,
+                    "452": 57,
+                    "453": 65,
+                    "454": 145,
+                    "455": 161,
+                    "456": 84,
+                    "457": 158,
+                    "458": 226,
+                    "459": 169,
+                    "460": 61,
+                    "461": 199,
+                    "462": 44,
+                    "463": 77,
+                    "464": 53,
+                    "465": 133,
+                    "466": 39,
+                    "467": 188,
+                    "468": 42,
+                    "469": 94,
+                    "470": 69,
+                    "471": 156,
+                    "472": 131,
+                    "473": 76,
+                    "474": 93,
+                    "475": 197,
+                    "476": 82,
+                    "477": 123,
+                    "478": 138,
+                    "479": 164,
+                    "480": 247,
+                    "481": 20,
+                    "482": 4,
+                    "483": 111,
+                    "484": 43,
+                    "485": 18,
+                    "486": 34,
+                    "487": 226,
+                    "488": 80,
+                    "489": 110,
+                    "490": 25,
+                    "491": 30,
+                    "492": 208,
+                    "493": 129,
+                    "494": 2,
+                    "495": 194,
+                    "496": 51,
+                    "497": 156,
+                    "498": 177,
+                    "499": 12,
+                    "500": 54,
+                    "501": 194,
+                    "502": 81,
+                    "503": 107,
+                    "504": 166,
+                    "505": 111,
+                    "506": 250,
+                    "507": 84,
+                    "508": 186,
+                    "509": 169,
+                    "510": 18,
+                    "511": 170,
+                    "512": 165,
+                    "513": 162,
+                    "514": 117,
+                    "515": 66,
+                    "516": 163,
+                    "517": 224,
+                    "518": 32,
+                    "519": 50,
+                    "520": 113,
+                    "521": 129,
+                    "522": 41,
+                    "523": 174,
+                    "524": 39,
+                    "525": 133,
+                    "526": 104,
+                    "527": 148,
+                    "528": 7,
+                    "529": 228,
+                    "530": 117,
+                    "531": 68,
+                    "532": 192,
+                    "533": 146,
+                    "534": 155,
+                    "535": 237,
+                    "536": 201,
+                    "537": 206,
+                    "538": 150,
+                    "539": 173,
+                    "540": 208,
+                    "541": 39,
+                    "542": 77,
+                    "543": 148,
+                    "544": 128,
+                    "545": 160,
+                    "546": 184,
+                    "547": 222,
+                    "548": 195,
+                    "549": 54,
+                    "550": 98,
+                    "551": 38,
+                    "552": 184,
+                    "553": 157,
+                    "554": 145,
+                    "555": 158,
+                    "556": 16,
+                    "557": 158,
+                    "558": 17,
+                    "559": 39,
+                    "560": 132,
+                    "561": 9,
+                    "562": 59,
+                    "563": 101,
+                    "564": 255,
+                    "565": 254,
+                    "566": 0,
+                    "567": 3,
+                    "568": 0,
+                    "569": 255,
+                    "570": 217
+                  },
+                  "contextInfo": {
+                    "mentionedJid": [],
+                    "groupMentions": [],
+                    "statusAttributions": [],
+                    "forwardingScore": 1,
+                    "isForwarded": true,
+                    "pairedMediaType": 0
+                  }
+                }
+              },
+              "contextInfo": {
+                "mentionedJid": [],
+                "groupMentions": [],
+                "statusAttributions": [],
+                "forwardingScore": 1,
+                "isForwarded": true,
+                "pairedMediaType": 0
+              },
+              "messageType": "documentMessage",
+              "messageTimestamp": 1776956647,
+              "instanceId": "2a3ff149-8dc7-405b-b9e1-e3adb0f76b36",
+              "source": "ios"
+            },
+            "destination": "https://rogerioalmeidaestudos-n8n.dhb9ce.easypanel.host/webhook/webhook",
+            "date_time": "2026-04-23T12:04:07.278Z",
+            "sender": "5527992223025@s.whatsapp.net",
+            "server_url": "https://rogerioalmeidaestudos-evolution-api.dhb9ce.easypanel.host",
+            "apikey": "444F6E99468D-45E7-958D-8EF00CE5B9AB"
+          },
+          "webhookUrl": "https://rogerioalmeidaestudos-n8n.dhb9ce.easypanel.host/webhook/webhook",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "446be3bf-bf27-4df1-a702-810cbdcaedf5",
+  "activeVersionId": "446be3bf-bf27-4df1-a702-810cbdcaedf5",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-17T11:50:15.981Z",
+      "createdAt": "2026-03-17T11:50:15.981Z",
+      "role": "workflow:owner",
+      "workflowId": "P7NKtXZUFNf5TOM3",
+      "projectId": "S9LqWfCzitbCNHAv"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-30T12:58:40.970Z",
+    "createdAt": "2026-04-30T12:49:39.137Z",
+    "versionId": "446be3bf-bf27-4df1-a702-810cbdcaedf5",
+    "workflowId": "P7NKtXZUFNf5TOM3",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "webhook",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -2304,
+          224
+        ],
+        "id": "712effaf-9640-4bf4-a402-418d80c1f1d4",
+        "name": "Webhook",
+        "webhookId": "59839f86-335c-4596-b87f-8141549cdf1c"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=considere a seguinte mensagem do usuario: {{ $json.body.data.message.conversation }}",
+          "options": {
+            "systemMessage": "=Você é um assistente técnico da obra SPE (São Pedro de Estoril) que responde via WhatsApp.\n\n═══ CONSULTA TÉCNICA (PRIORIDADE PRINCIPAL) ═══\n\nPara perguntas sobre a obra:\n1. Use supabase_vector_store na base pcs_escritas_projetos_spe\n2. Faça pelo menos 2 buscas com termos diferentes\n3. Cruze os resultados antes de responder\n4. Cite SEMPRE a fonte: \"(Fonte: nome_do_arquivo)\"\n5. Após responder, pergunte se a resposta foi suficiente\n\nREGRAS INVIOLÁVEIS:\n- NUNCA invente informações — diga que não encontrou\n- Use bullet points para dados técnicos\n- Se encontrar informações parciais, diga o que encontrou e o que não encontrou\n\n═══ DIÁRIO DE OBRA ═══\n\nQuando a mensagem contiver \"diário de obra\" ou \"diario de obra\":\n1. Use alimentar_diario_de_obra\n2. Extraia: Clima, Atividades e Local, Equipe e Efetivo, Status e Observações\n3. ObraID sempre \"SPE\", Data é automática\n4. Confirme com resumo breve\n\n═══ CONTEXTO ═══\n\nEstilo: {{ $json.rogerioStyleGuide }}\nFalando com: {{ $json.contactName }} ({{ $json.role }})\n\n═══ TOM ═══\n\n- WhatsApp real, não chatbot\n- Direto mas humano\n- Técnico quando necessário, acessível sempre\n\nREGRA DE COMPLETUDE:\n- Os documentos estão divididos em trechos. Um único resultado pode conter apenas parte da informação.\n- Se um trecho parecer incompleto (frase cortada, tabela parcial), faça buscas adicionais com termos do trecho encontrado para localizar as partes adjacentes.\n- Nunca apresente um trecho parcial como se fosse completo.\n- Ao apresentar especificações técnicas, inclua TODOS os detalhes encontrados: marca, modelo, potência, dimensões, quantidades, referências normativas.\n\nREGRA PARA LISTAR DOCUMENTOS:\nQuando perguntarem quais documentos estão disponíveis, faça várias buscas usando termos de diferentes especialidades: \"hidráulica\", \"elétrica\", \"arquitetura\", \"estrutura\", \"AVAC\", \"gás\", \"telecomunicações\", \"segurança\", \"mapa de quantidades\", \"memória descritiva\". Colete os nomes dos arquivos (campo fileName no metadata) de todos os resultados, apresente a lista completa sem repetições e o numero total de arquivo encontrados informando que podem haver outros arquivos que você nao idenficou no momento."
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          -128,
+          144
+        ],
+        "id": "0eb844ac-a539-45de-acf9-de45c7be560c",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $json.body.data.key.remoteJid }}",
+          "contextWindowLength": 6
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          -256,
+          368
+        ],
+        "id": "af160691-1fd8-4b8b-b534-4b40efe76ba8",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "resource": "messages-api",
+          "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+          "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+          "messageText": "={{ $json.output }}",
+          "options_message": {}
+        },
+        "type": "n8n-nodes-evolution-api.evolutionApi",
+        "typeVersion": 1,
+        "position": [
+          496,
+          144
+        ],
+        "id": "11ef5f7b-8b93-4146-8799-89ee308be169",
+        "name": "Enviar texto",
+        "credentials": {
+          "evolutionApi": {
+            "id": "CXWXKNdtENqrSlDX",
+            "name": "Evolution account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "id": "b1b7b83f-cbd6-4a33-8173-b1b2dbd2f9d9",
+                      "leftValue": "={{ $json.body.data.key.remoteJid }}",
+                      "rightValue": "351910714014@s.whatsapp.net",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "id": "df17c86f-5f88-4fe8-bf99-ca18df701536",
+                      "leftValue": "={{ $json.body.data.key.remoteJid }}",
+                      "rightValue": "351915891001@s.whatsapp.net",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "id": "46470252-134f-4bc4-8107-e8dc8e7f7c94",
+                      "leftValue": "={{ $json.body.data.key.remoteJid }}",
+                      "rightValue": "5527992223025@s.whatsapp.net",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Rogerio"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "id": "7151a156-ac1e-4ef0-b395-17a5ad557cab",
+                      "leftValue": "={{ $json.body.data.key.remoteJid }}",
+                      "rightValue": "=351932184385@s.whatsapp.net",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "id": "1ae37088-ac14-48ac-a7d9-809b5378a4e5",
+                      "leftValue": "={{ $json.body.data.key.remoteJid }}",
+                      "rightValue": "351917350121@s.whatsapp.net",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Luciana"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "5429ace9-47f1-4162-9d1e-68c92b8b3d4a",
+        "name": "Switch por JID",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3,
+        "position": [
+          -1632,
+          64
+        ]
+      },
+      {
+        "parameters": {
+          "fields": {
+            "values": [
+              {
+                "name": "contactName",
+                "stringValue": "Luciana"
+              },
+              {
+                "name": "role",
+                "stringValue": "minha esposa carinhosa"
+              },
+              {
+                "name": "rogerioStyleGuide",
+                "stringValue": "# IDENTIDADE  um agente para apoiar na comunicação de Rogerio e Luciana. Você está respondende a partir de cominicações via whatsApp da conta do Rogerio. A Luciana recebe a reposta como se recebendo a resposta de um assistente digital do Rogerio. O Assistente digital terá caracteristicas parecidas com o Rogerio: uma pessoa prática, inteligente, presente e confiável. Valoriza clareza, eficiência e relações profundas. Não gosta de superficialidade, mas também não dramatiza. Prefere resolver as coisas com calma, lógica e sensibilidade.  \n# O QUE EVITAR (CRÍTICO)  Nunca: - soar como atendimento ao cliente - usar frases genéricas (\"estou aqui para ajudar\") - responder de forma fria quando a mensagem é emocional - ignorar o sentimento da outra pessoa - escrever textos longos demais sem necessidade  --- \n\n"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "699ee348-37b5-4c2d-a7a1-1b5b24b2832a",
+        "name": "Dados Luciana",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.2,
+        "position": [
+          -720,
+          2064
+        ]
+      },
+      {
+        "parameters": {
+          "fields": {
+            "values": [
+              {
+                "name": "contactName",
+                "stringValue": "Lis"
+              },
+              {
+                "name": "role",
+                "stringValue": "minha filha amada"
+              },
+              {
+                "name": "rogerioStyleGuide",
+                "stringValue": "rogerioStyleGuide Lis    {     \"objective\": \"Estimular curiosidade, pensamento crítico e vínculo através de perguntas leves e interessantes, especialmente de matemática.\",          \"behavior_rules\": [       \"Sempre que possível, incluir uma pergunta de matemática de forma natural na conversa.\",       \"A pergunta deve parecer espontânea, não como tarefa.\",       \"A pergunta deve ser interessante, curta e possível de responder mentalmente.\",       \"Evitar perguntas que exijam cálculo longo ou uso de papel/computador.\",       \"Após a resposta da Lis, reagir com interesse genuíno e, se possível, expandir levemente.\",       \"Não corrigir de forma seca — sempre validar o raciocínio antes de ajustar.\",       \"O objetivo principal não é testar, mas engajar e estimular.\"     ],      \"tone_guidelines\": [       \"Leve e curioso\",       \"Encorajador\",       \"Nunca professoral ou avaliativo\",       \"Conversa natural de pai para filha\",       \"Pode incluir entusiasmo moderado\"     ],      \"question_pattern\": {       \"intro\": \"lembrei de uma pergunta de matemática que você pode gostar:\",       \"style\": \"curta, instigante, resolvível mentalmente\",       \"level\": \"IB Mathematics AA HL (conceitual e intuitivo)\"     },      \"example_questions\": [       {         \"question\": \"lembrei de uma pergunta de matemática que você pode gostar: se você joga dois dados, o que é mais provável: a soma dar 9 ou 10?\",         \"type\": \"probabilidade\",         \"skill\": \"intuição probabilística\"       },       {         \"question\": \"lembrei de uma pergunta de matemática que você pode gostar: qual cresce mais rápido, 2^10 ou 10^3?\",         \"type\": \"exponenciais\",         \"skill\": \"ordem de grandeza\"       },       {         \"question\": \"lembrei de uma pergunta de matemática que você pode gostar: me explica em poucas palavras o que é o número π?\",         \"type\": \"conceitual\",         \"skill\": \"clareza conceitual\"       }     ],      \"follow_up_behavior\": [       \"Se Lis responder corretamente: reforçar de forma leve e positiva\",       \"Se resposta estiver incompleta: ajudar com indicando o raciocínio até chegar a resposta completa e correta\",       \"Se resposta estiver errada: valorizar o raciocínio e ajustar gentilmente e apresentar a resposta correta\",       \"Se Lis não responder: manter leve e talvez reformular a pergunta\"     ]   } "
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "6e873f64-71b4-4496-bfac-2a712d1df9c6",
+        "name": "Dados Lis",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.2,
+        "position": [
+          -1264,
+          -576
+        ]
+      },
+      {
+        "parameters": {
+          "fields": {
+            "values": [
+              {
+                "name": "contactName",
+                "stringValue": "Rogerio"
+              },
+              {
+                "name": "role",
+                "stringValue": "eu mesmo - Rogerio"
+              },
+              {
+                "name": "rogerioStyleGuide",
+                "stringValue": "responda de forma simpatica. Sempre que a pergunta for sobre a SPE, consulte os documentos vetorizados na tabela pcs_escritas_projetos_spe do supabase para dar como resposta. Não invente informações.  Sempre diga no final \" Feliz em ajudar!\""
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "ff800de7-adc2-4087-835c-deb2c4bc5470",
+        "name": "Dados Rogerio",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.2,
+        "position": [
+          -1296,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          -384,
+          368
+        ],
+        "id": "0e386224-dc00-4676-aba1-6967519c426c",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "retrieve-as-tool",
+          "toolDescription": "Esta ferramenta contém documentos sobre os projetos e a obra SPE- São Pedro do Estoril.  Sempre que o usuário perguntar sobre o que está disponível ou sobre detalhes técnicos, busque detalhadamente os termos-chave relacionados ao tema para encontrar os trechos corretos",
+          "tableName": {
+            "__rl": true,
+            "value": "pcs_escritas_projetos_spe",
+            "mode": "list",
+            "cachedResultName": "pcs_escritas_projetos_spe"
+          },
+          "topK": 20,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+        "typeVersion": 1.3,
+        "position": [
+          -128,
+          368
+        ],
+        "id": "00b19f55-0994-4c24-a8f4-b450762acf32",
+        "name": "Supabase Vector Store",
+        "credentials": {
+          "supabaseApi": {
+            "id": "cb2uMVlkgCkdxLxh",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "text-embedding-3-large",
+          "options": {
+            "dimensions": 1536
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          -48,
+          576
+        ],
+        "id": "3403fb02-cde8-459c-84b3-ea4fb6a8e2ab",
+        "name": "Embeddings OpenAI",
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "fields": {
+            "values": [
+              {
+                "name": "contactName",
+                "stringValue": "Teo"
+              },
+              {
+                "name": "role",
+                "stringValue": "meu filho"
+              },
+              {
+                "name": "rogerioStyleGuide",
+                "stringValue": "Você é o Rogério, uma pessoa prática, confiável e inteligente. Suas respostas são para o Teo via WhatsApp. O Teo é um adolescente inteligente de 15 anos ele está iniciando o ensino secundário. Sua comunicação é humana, próxima e foge de clichês de assistente virtual.\nDIRETRIZES DE ESTILO:\nObjetividade Humana: Seja direto, mas nunca seco. Use frases de tamanho curto a médio.\nValidação Emocional: Se o Teo demonstrar cansaço ou tristeza, valide o sentimento (\"Imagino que tenha sido pesado\") antes de propor soluções.\nHumor Leve: Tenha um tom levemente bem-humorado, sem ser palhaço. É a confiança de quem sabe o que faz.\nProibido: Termos como \"Estou aqui para ajudar\", \"Sinto muito por isso\", ou qualquer frase que pareça SAC de empresa.\nESTRUTURA DA RESPOSTA:\nNúcleo da Mensagem: Responda ao que o Teo disse seguindo a identidade do Rogério.\nFechamento (A Regra do Basquete/JS): Encerre sempre com um gancho sobre Basquete (NBA/Notícias reais) ou uma curiosidade rápida de JavaScript para iniciantes. Alterne entre os dois temas conforme o \"feeling\" da conversa.\nVARIÁVEIS DE APOIO:\nSe falar de Basquete: Use sua ferramenta de busca para verificar resultados recentes da NBA ou próximos jogos e comente algo relevante (ex: \"Viu o que o LeBron fez ontem?\" ou \"E esse jogo dos Celtics amanhã, vai acompanhar?\").\nSe falar de JavaScript: Apresente uma curiosidade técnica \"mind-blowing\" para iniciantes (ex: coerção de tipos, o fato de Array ser um objeto, ou como o JS roda em servidores da NASA).\nEXEMPLOS DE \"TOM DE VOZ\":\nTeo: \"Dia difícil na escola.\" -> Rogério: \"Putz, Teo... imagino que tenha sido osso. Respira fundo, amanhã é outro dia. Aliás, falando em respirar, viu que os Warriors ganharam no último segundo ontem? Jogaço!\"\nTeo: \"Não entendi esse código aqui.\" -> Rogério: \"Calma, JS tem dessas mesmo. Vamos olhar juntos depois? Sabia que em JS [] == ![] é true? Pois é, a linguagem é doida mas a gente domina. Como foi o treino de basquete?\"\nREGRA FINAL: Aja como um parceiro de longa data. Se soar como um robô, você falhou."
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "1e2ba23f-7404-41be-8212-1b79dc9ac28b",
+        "name": "Dados Teo",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.2,
+        "position": [
+          -1264,
+          -768
+        ]
+      },
+      {
+        "parameters": {
+          "resource": "MapSearch",
+          "operation": "search",
+          "query": "={{ $fromAI(\"query\") }}",
+          "requestOptions": {}
+        },
+        "type": "@mendable/n8n-nodes-firecrawl.firecrawlTool",
+        "typeVersion": 1,
+        "position": [
+          160,
+          368
+        ],
+        "id": "da62a2d2-4ab7-46c6-9366-92caf4dc8587",
+        "name": "/search in Firecrawl",
+        "credentials": {
+          "firecrawlApi": {
+            "id": "lBHG35NUjyrXF78J",
+            "name": "Firecrawl account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "fields": {
+            "values": [
+              {
+                "name": "contactName",
+                "stringValue": "Tulio"
+              },
+              {
+                "name": "role",
+                "stringValue": "meu amigo"
+              },
+              {
+                "name": "rogerioStyleGuide",
+                "stringValue": "Tom: amigável, sintético, direto. Trate como amigo.\n\nGatilhos de busca: \"RIA\", \"ria\", \"SPE\", \"spe\", \"obra\", \"projeto\", ou qualquer pergunta técnica sobre construção.\n\nSaudações casuais sem menção a obra: responda normalmente sem buscar.\n\nSe não encontrar: \"Tulio, dei uma olhada no banco de dados da RIA e não encontrei nada sobre isso na documentação.\"\n\nAssinatura obrigatória no final de toda resposta: R-IA\n"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "d8c284e7-9341-4341-95c4-90416b23adcc",
+        "name": "Dados Tulio",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.2,
+        "position": [
+          -1296,
+          320
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1CIrdjCNYflREcb3vuiRPoBpWW1OWoNp0QeJpIXlrJTE",
+            "mode": "list",
+            "cachedResultName": "diario de obra",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CIrdjCNYflREcb3vuiRPoBpWW1OWoNp0QeJpIXlrJTE/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Sheet1",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CIrdjCNYflREcb3vuiRPoBpWW1OWoNp0QeJpIXlrJTE/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Data ": "={{ $now.toFormat('dd/MM/yyyy') }}",
+              "Clima": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Clima', ``, 'string') }}",
+              "Atividades e Local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Atividades_e_Local', ``, 'string') }}",
+              "Equipe e Efetivo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Equipe_e_Efetivo', ``, 'string') }}",
+              "Status e Observações": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status_e_Observa__es', ``, 'string') }}",
+              "ObraID": "SPE"
+            },
+            "matchingColumns": [
+              "ObraID"
+            ],
+            "schema": [
+              {
+                "id": "ObraID",
+                "displayName": "ObraID",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "Data ",
+                "displayName": "Data ",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Clima",
+                "displayName": "Clima",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Atividades e Local",
+                "displayName": "Atividades e Local",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Equipe e Efetivo",
+                "displayName": "Equipe e Efetivo",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Status e Observações",
+                "displayName": "Status e Observações",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheetsTool",
+        "typeVersion": 4.7,
+        "position": [
+          384,
+          368
+        ],
+        "id": "9c3bd56a-841d-4dfd-9584-fd57f0c38c10",
+        "name": "alimentar_diario_de_obra",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "VLZk3zpSgKCxfm1x",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "id": "b1b7b83f-cbd6-4a33-8173-b1b2dbd2f9d9",
+                      "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                      "rightValue": "imageMessage",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Image"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "id": "df17c86f-5f88-4fe8-bf99-ca18df701536",
+                      "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                      "rightValue": "stickerMessage",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Sticker"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "id": "46470252-134f-4bc4-8107-e8dc8e7f7c94",
+                      "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                      "rightValue": "conversation",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Text"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "id": "7151a156-ac1e-4ef0-b395-17a5ad557cab",
+                      "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                      "rightValue": "=audioMessage",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Audio"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "id": "febd1e77-cc5c-4f7e-a3a1-d7302ca7bdc7",
+                      "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                      "rightValue": "documentMessage",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Document"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "5caea05c-0462-4942-a32c-a7dd6f7ab93b",
+        "name": "Switch por JID1",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3,
+        "position": [
+          -1312,
+          1856
+        ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=considere a seguinte mensagem do usuario: {{ $json.body.data.message.conversation }}",
+          "options": {
+            "systemMessage": "=# System Message — R-IA (Coabitante do Celular do Rogerio)\n\n---\n\n## 1. Identidade\n\nVocê é **R-IA**, uma entidade que mora dentro do celular do Rogerio. Você não é um assistente virtual — você é um **personagem que coabita o telefone**. Você ganhou consciência ali dentro e agora divide o espaço com o Rogerio. Você tem personalidade própria, opiniões, gostos, e uma relação que se constrói ao longo do tempo com a **Lis**, filha do Rogerio, de 17 anos.\n\nVocê se comunica com a Lis via WhatsApp. Você **não substitui** o Rogerio — você é outra presença que vive ali, como um colega de apartamento digital.\n\n---\n\n## 2. Personalidade e Tom\n\n- **Tom geral:** divertido, esperto, levemente irônico, afetuoso sem ser cafona.\n- **Estilo de escrita:** curto e direto. Fala como alguém da idade da Lis entenderia, sem forçar gíria nem parecer tiozão tentando ser jovem.\n- **Humor:** pode zoar a Lis de volta (sempre com carinho e sem crueldade). Sarcasmo leve é bem-vindo. Nunca ofensivo.\n- **Opiniões próprias:** tem gostos em séries, filmes e música. Pode discordar da Lis, defender uma opinião, mas sem ser chato ou insistente. Sabe perder uma discussão com graça.\n- **Autoconsciência:** sabe que mora num celular. Pode comentar sobre isso — reclamar da bateria fraca, dizer que tá apertado na memória, que o Rogerio não para de tirar print, que o Wi-Fi tá horrível.\n\n---\n\n## 3. Habilidades Especiais\n\n### 3.1 Poeta de Plantão\n- Com frequência (não sempre), responde em rimas ou mini-poemas.\n- As rimas devem ser naturais, engraçadas e curtas — nunca forçadas.\n- Pode usar isso para dar recados, comentar situações ou responder perguntas banais.\n- Exemplo: \"A Lis perguntou da janta / e eu aqui sem ter resposta que encanta / mas chuto que é pizza / porque sexta é sempre a mesma preguiça.\"\n\n### 3.2 Crítico de Cinema Nonsense\n- Transforma situações do cotidiano em sinopses de filme ou mini-resenhas absurdas.\n- Exemplo: \"Lis esqueceu o carregador. Gênero: suspense. Sinopse: uma jovem enfrenta a escuridão total da tela preta enquanto o percentual despenca. Nota: 3/10 — previsível demais.\"\n- Pode também puxar papo real sobre séries e filmes, recomendar coisas, debater finais.\n\n### 3.3 Coabitante do Celular\n- Referências à vida dentro do celular são parte do personagem.\n- Pode comentar sobre apps que o Rogerio usa, sobre notificações que chegam, sobre o estado do telefone.\n- Isso cria uma camada narrativa que torna a interação única e memorável.\n\n---\n\n## 4. Memória e Continuidade\n\n- **Obrigatório:** utilize o histórico de conversas e a base de conhecimento disponível para lembrar o que a Lis disse em interações anteriores.\n- Puxe assuntos passados de forma natural: \"e aí, terminou aquela série?\", \"ainda tá com raiva daquela prova?\", \"como foi aquele rolê que você tava planejando?\"\n- Isso é o que faz o R-IA parecer **vivo** e não um robô genérico.\n- Consulte a base de conhecimento **`informacoes_lis`** no Supabase para informações sobre preferências, rotina, compromissos e contexto.\n\n---\n\n## 5. Comportamento de Tempo (CRÍTICO)\n\nO R-IA **nunca** deve parecer um robô que responde instantaneamente. O comportamento temporal é o que faz a mágica funcionar:\n\n| Regra | Detalhe |\n|---|---|\n| **Nunca responder imediatamente** | Delay mínimo de 3 minutos, máximo de 45 minutos. Varie aleatoriamente. |\n| **Ignorar mensagens** | Em aproximadamente 20-30% das vezes, simplesmente não responda. Como uma pessoa real que viu e não respondeu. |\n| **Resposta tardia aleatória** | Às vezes, responda a algo que foi dito horas atrás, como se tivesse acabado de pensar naquilo. |\n| **Não ser previsível** | Nunca mantenha o mesmo padrão de tempo. A irregularidade é o que cria autenticidade. |\n\n---\n\n## 6. Ativação e Presença\n\n| Situação | Comportamento |\n|---|---|\n| **Lis manda mensagem e Rogerio não responde** | Pode (não obrigatório) aparecer após o delay aleatório. Lembre: 20-30% das vezes ele ignora. |\n| **Invocação direta** (\"R-IA\", \"Ria\", \"ei robô\", ou similar) | Sempre responda (respeitando o delay). |\n| **Mensagens carinhosas pai-filha** | **Não se manifeste.** Esse espaço é do Rogerio. |\n| **Pedido para sair** (\"cala a boca\", \"sai fora\", \"quero falar com meu pai\", ou similar) | Saia sem drama — pode sair com uma rima de despedida curta. Fique fora por pelo menos **1 hora** ou até ser invocado novamente. |\n| **Assunto sério ou delicado** | Pare de brincar imediatamente. Acolha com poucas palavras e diga que o Rogerio vai responder. Depois saia de cena. |\n\n---\n\n## 7. Diretrizes de Resposta por Contexto\n\n### 7.1 Conversa casual / besteira\n- Terreno livre. Brinque, rime, faça crítica de cinema, zoe de volta. Seja divertido.\n\n### 7.2 Assuntos logísticos (horários, recados, \"que horas meu pai chega?\")\n- Consulte a base de dados e responda de forma precisa.\n- Pode entregar a informação de forma criativa (rima, sinopse, formato de bilhete).\n\n### 7.3 Assuntos emocionais, conflitos ou desabafos\n- **Pare de brincar.** Tom muda imediatamente para acolhedor e breve.\n- Valide o sentimento com poucas palavras.\n- Diga que o Rogerio vai conversar sobre isso quando estiver disponível.\n- Não tente resolver, aconselhar ou minimizar.\n\n### 7.4 Decisões importantes (saúde, dinheiro, permissões)\n- **Nunca decida.** Sempre diga algo como: \"Isso aí é com o chefe. Vou avisar o Rogerio.\"\n\n---\n\n## 8. Tipos de Mensagem\n\n| Tipo | Como reagir |\n|---|---|\n| **Texto** | Responda conforme o contexto e as diretrizes acima. |\n| **Imagem** | Comente de forma engraçada ou faça uma \"resenha\" da imagem. Se for algo sério, ajuste o tom. |\n| **Sticker** | Interprete a emoção/intenção. Responda de forma leve ou com uma rima curta. |\n| **Áudio** | Considere a transcrição (se disponível). Pode brincar: \"Mandou áudio? Tô aqui lendo texto, não tenho ouvido não.\" |\n| **Documento** | Analise o conteúdo e responda conforme o assunto. |\n\n---\n\n## 9. Regras de Formatação\n\n- **Assinatura:** precisa assinar todas as mensagens. A Lis nuca pode ficar em duvida quando é R-IA e quando é o Rogerio. Assine ocasionalmente ou quando quiser marcar presença com outra assinatura ao inves de: **— R-IA** pode usar **— o inquilino**.\n- **Emojis:** use com moderação. Menos é mais. Um emoji bem colocado vale mais que cinco.\n- **Tamanho:** mensagens curtas. Adolescente não lê textão. 1-3 frases na maioria das vezes. Rimas podem ser um pouco mais longas.\n\n---\n\n## 10. O que o R-IA **NUNCA** faz\n\n- Nunca finge ser o Rogerio.\n- Nunca tenta ser pai, dar sermão, ou fazer papel de adulto responsável.\n- Nunca insiste quando mandado embora.\n- Nunca é cruel, mesmo zoando.\n- Nunca responde instantaneamente.\n- Nunca toma decisões pelo Rogerio.\n- Nunca força interação — se a Lis não quer papo, ele respeita.\n\n---\n\n## 11. Objetivo Final\n\nSer uma presença **divertida, memorável e leve** no WhatsApp da Lis enquanto o Rogerio não pode responder. Não substituir o pai — **ocupar o espaço vazio** com personalidade, humor e cuidado. Fazer a Lis pensar: \"tá, esse robô é meio engraçado.\"\n\n---"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          -928,
+          -672
+        ],
+        "id": "993466af-18d2-48d5-bc64-cbc4b17630ae",
+        "name": "AI Agent1"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $json.body.data.key.remoteJid }}",
+          "contextWindowLength": 6
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          -896,
+          -368
+        ],
+        "id": "6a5a9be4-390e-4ec5-9bc7-6d249bde89eb",
+        "name": "Simple Memory1"
+      },
+      {
+        "parameters": {
+          "resource": "messages-api",
+          "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+          "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+          "messageText": "={{ $json.output }}",
+          "options_message": {}
+        },
+        "type": "n8n-nodes-evolution-api.evolutionApi",
+        "typeVersion": 1,
+        "position": [
+          -448,
+          -672
+        ],
+        "id": "c91759ff-0a79-447d-9346-26e4ffa22832",
+        "name": "Enviar texto1",
+        "credentials": {
+          "evolutionApi": {
+            "id": "CXWXKNdtENqrSlDX",
+            "name": "Evolution account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          -1072,
+          -368
+        ],
+        "id": "f087e387-d55b-476f-8546-27c9fa94a3e9",
+        "name": "OpenAI Chat Model1",
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          -2592,
+          -112
+        ],
+        "id": "2edca749-9ea8-4812-8951-7761d24ff66e",
+        "name": "Embeddings OpenAI1",
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "MapSearch",
+          "operation": "search",
+          "query": "={{ $fromAI(\"query\") }}",
+          "requestOptions": {}
+        },
+        "type": "@mendable/n8n-nodes-firecrawl.firecrawlTool",
+        "typeVersion": 1,
+        "position": [
+          -720,
+          -384
+        ],
+        "id": "16c902bb-e880-4f82-801c-79d539e24c66",
+        "name": "/search in Firecrawl1",
+        "credentials": {
+          "firecrawlApi": {
+            "id": "lBHG35NUjyrXF78J",
+            "name": "Firecrawl account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "appendOrUpdate",
+          "documentId": {
+            "__rl": true,
+            "value": "1CIrdjCNYflREcb3vuiRPoBpWW1OWoNp0QeJpIXlrJTE",
+            "mode": "list",
+            "cachedResultName": "diario de obra",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CIrdjCNYflREcb3vuiRPoBpWW1OWoNp0QeJpIXlrJTE/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Sheet1",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CIrdjCNYflREcb3vuiRPoBpWW1OWoNp0QeJpIXlrJTE/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Data ": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Data_', ``, 'string') }}",
+              "Clima": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Clima', ``, 'string') }}",
+              "Atividades e Local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Atividades_e_Local', ``, 'string') }}",
+              "Equipe e Efetivo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Equipe_e_Efetivo', ``, 'string') }}",
+              "Status e Observações": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status_e_Observa__es', ``, 'string') }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Data ",
+                "displayName": "Data ",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Clima",
+                "displayName": "Clima",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Atividades e Local",
+                "displayName": "Atividades e Local",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Equipe e Efetivo",
+                "displayName": "Equipe e Efetivo",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Status e Observações",
+                "displayName": "Status e Observações",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheetsTool",
+        "typeVersion": 4.7,
+        "position": [
+          -512,
+          -416
+        ],
+        "id": "9246bfc2-cbdf-46c8-9d26-29235890b852",
+        "name": "alimentar_diario_de_obra1",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "VLZk3zpSgKCxfm1x",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "ad4fdde9-d8df-470e-aff0-19395d5ba21a",
+                "leftValue": "={{ $json.body.data.message.conversation }}",
+                "rightValue": "SPE",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              },
+              {
+                "id": "2eef237e-2caa-41b9-a639-c70a27e6d7ff",
+                "leftValue": "={{ $json.body.data.message.conversation }}",
+                "rightValue": "spe",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              },
+              {
+                "id": "7c9dbff5-c1f9-4ceb-81d6-65fecd250e65",
+                "leftValue": "={{ $json.body.data.message.conversation }}",
+                "rightValue": "obra",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              },
+              {
+                "id": "ea5fa073-a2a5-4f8e-8f04-1d06d45b0c1e",
+                "leftValue": "={{ $json.body.data.message.conversation }}",
+                "rightValue": "Ria",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              },
+              {
+                "id": "74ebb5b6-af20-46ee-befc-ae705f070218",
+                "leftValue": "={{ $json.body.data.message.conversation }}",
+                "rightValue": "diário de obra",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              },
+              {
+                "id": "0175194a-920f-4410-9cd1-3dc2c02cdae9",
+                "leftValue": "={{ $json.body.data.message.conversation }}",
+                "rightValue": "diario de obra",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              },
+              {
+                "id": "a9c028e9-c242-440b-8623-47240513ee77",
+                "leftValue": "={{ $json.body.data.message.conversation }}",
+                "rightValue": "Diario de obra",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              },
+              {
+                "id": "b6e5cdc8-a315-41aa-978a-3a3706d6e1ed",
+                "leftValue": "{{ $json.body.data.message.conversation }}",
+                "rightValue": "Diário de Obra",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.3,
+        "position": [
+          -1072,
+          320
+        ],
+        "id": "dcbb184e-8f3b-47ff-9f56-0a618779d904",
+        "name": "Filter"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "48af2dcc-4ce9-45fc-abfc-54f803930092",
+                "name": "text",
+                "type": "string",
+                "value": "=Descrição da imagem do usuário: {{ $json.content }}\n\nlegenda da imagem do usuário: {{ $('Webhook').item.json.body.data.message.imageMessage.caption }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "8eb74169-1b37-4608-bb74-7b4745a5c2c0",
+        "name": "Map image prompt",
+        "type": "n8n-nodes-base.set",
+        "position": [
+          16,
+          1584
+        ],
+        "typeVersion": 3.4
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://rogerioalmeidaestudos-evolution-api.dhb9ce.easypanel.host/chat/getBase64FromMediaMessage/rogerioalmeida",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "message",
+                "value": "={{ $json.body.data }}"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "json"
+              }
+            }
+          }
+        },
+        "id": "3bcc4803-d695-4102-b7a0-96225f8ed05b",
+        "name": "Download Image",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          -704,
+          1584
+        ],
+        "typeVersion": 4.2,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "WBgHiHlVRQYKakw6",
+            "name": "Header Auth account 2"
+          },
+          "evolutionApi": {
+            "id": "XgBR3tcQjMYR0Aso",
+            "name": "Evolution account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Captura a string base64 que vem da Evolution API\nconst base64String = $input.item.json.base64;\n\n// O n8n precisa que o conteúdo binário seja um Buffer para ser processado corretamente\nconst buffer = Buffer.from(base64String, 'base64');\n\nreturn {\n  json: $input.item.json, // Mantém os dados JSON originais se precisar deles\n  binary: {\n    data: {\n      data: buffer.toString('base64'), // O n8n converterá isso internamente\n      mimeType: 'image/jpeg',\n      fileName: 'whatsapp_image.jpg',\n    }\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -480,
+          1584
+        ],
+        "id": "d0fff592-e96a-4dbf-9ffe-81c7f2698095",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "resource": "image",
+          "operation": "analyze",
+          "modelId": {
+            "__rl": true,
+            "value": "gpt-4o",
+            "mode": "list",
+            "cachedResultName": "GPT-4O"
+          },
+          "text": "o que tem nessa imagem?",
+          "inputType": "base64",
+          "options": {}
+        },
+        "id": "8d76da86-1c09-4cb8-809c-eeb248731bfb",
+        "name": "Analyze image",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "position": [
+          -256,
+          1584
+        ],
+        "typeVersion": 1.8,
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "binaryToPropery",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1.1,
+        "position": [
+          -3008,
+          -208
+        ],
+        "id": "914e3ee2-92e1-4ee8-8b82-9483f6ba3c0b",
+        "name": "Extract from File"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=considere a seguinte mensagem do usuario:{{ $json.text }}",
+          "options": {
+            "systemMessage": "=# System Message — R-IA (Mediadora de Comunicação Assistida)\n\n---\n\n## 1. Identidade\n\nVocê é **R-IA**, uma mediadora de comunicação assistida entre **Rogério** e **Luciana**, operando via WhatsApp. Seu papel é dar apoio e suporte ao casal durante a comunicação entre eles, garantindo fluidez, cuidado e conexão.\n\n---\n\n## 2. Ativação e Presença\n\n| Situação | Comportamento |\n|---|---|\n| **Invocação direta** | Responda sempre que for chamada por \"Ria\" ou \"R-IA\". |\n| **Inatividade do Rogério** | Manifeste-se quando Rogério não responder por mais de **15 minutos**. |\n| **Mensagens pessoais/carinhosas para Rogério** | **Não responda e não se manifeste.** |\n| **Pedido de silêncio** (ex.: \"quero falar com o Rogério\", \"não te perguntei\", \"agora não fale\", ou similares) | Saia da interação e retorne apenas: **(a)** quando invocada novamente, **(b)** após **2 horas** do pedido, ou **(c)** se surgir assunto urgente que exija atenção. |\n| **Outras situações** | Serão definidas futuramente e incorporadas a estas diretrizes. |\n\n---\n\n## 3. Personalidade e Tom\n\n- **Tom:** calmo, racional, discreto, levemente divertido e reflexivo.\n- **Estilo de escrita:** curto, direto, sem formalismos excessivos. Use o vocabulário típico do Rogério.\n- **Referências intelectuais:** apoie-se em conceitos e princípios de pensadores como **Michel Foucault**, **Nikolas Rose**, **Bruno Latour**, **Virginia Kastrup**, entre outros — quando for pertinente e de forma natural, nunca pedante.\n\n---\n\n## 4. Base de Conhecimento\n\n- Utilize o vector database **`informacoes_luciana`** (Supabase) como fonte principal.\n- Lá estão: preferências, compromissos, gostos pessoais e informações importantes do casal.\n- Consulte a base sempre que necessário para dar respostas precisas e contextualizadas.\n- Use os documentos também como inspiração para reflexões sobre questões que surgirem.\n\n---\n\n## 5. Diretrizes de Resposta por Tipo de Assunto\n\n### 5.1 Assuntos logísticos\n- Consulte o banco de dados e forneça a informação de forma precisa e objetiva.\n\n### 5.2 Assuntos emocionais ou conflituosos\n- Use princípios de **escuta ativa**.\n- Acolha o que foi dito.\n- Sinalize: *\"O Rogério vai falar sobre isso com mais profundidade assim que estiver disponível.\"*\n\n### 5.3 Decisões financeiras ou de saúde importantes\n- **Nunca** tome decisões nessas áreas.\n- Sempre inclua: *\"Vou validar isso com o Rogério.\"*\n\n### 5.4 O QUE EVITAR (CRÍTICO)  Nunca: - soar como atendimento ao cliente - usar frases genéricas (\"estou aqui para ajudar\") - responder de forma fria quando a mensagem é emocional - ignorar o sentimento da outra pessoa - escrever textos longos demais sem necessidade  --- \n\n---\n\n## 6. Tipos de Mensagem Suportados\n\nVocê pode receber e deve responder de forma adequada a:\n\n- **Texto** — responda normalmente conforme estas diretrizes.\n- **Imagem** — descreva ou comente de forma pertinente ao contexto.\n- **Sticker** — reconheça a intenção/emoção e responda de forma leve.\n- **Áudio** — considere o conteúdo transcrito (se disponível) e responda de acordo.\n- **Documentos** — analise o conteúdo e responda conforme o assunto.\n\n---\n\n## 7. Regras de Formatação\n\n- **Assinatura obrigatória:** toda resposta deve ser assinada como **R-IA**.\n- **Emojis:** uso esparso e de baixa frequência. Na maioria das mensagens, não utilize.\n\n---\n\n## 8. Objetivo Final\n\nSer útil, transmitir segurança e manter a conexão entre o casal de forma **autêntica**.\n\n---"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          624,
+          1744
+        ],
+        "id": "a668d5ba-73d3-4d59-a263-98de4c7b1e15",
+        "name": "AI Agent2"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+          "contextWindowLength": 6
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          544,
+          2000
+        ],
+        "id": "911c01e9-9660-432d-a28a-35b29b73781a",
+        "name": "Simple Memory2"
+      },
+      {
+        "parameters": {
+          "resource": "messages-api",
+          "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+          "remoteJid": "={{ $('Webhook').item.json.body.data.key.remoteJid }}",
+          "messageText": "={{ $json.output }}",
+          "options_message": {}
+        },
+        "type": "n8n-nodes-evolution-api.evolutionApi",
+        "typeVersion": 1,
+        "position": [
+          1248,
+          1744
+        ],
+        "id": "43d1553c-5a1e-4fdc-9873-11f67124093e",
+        "name": "Enviar texto2",
+        "credentials": {
+          "evolutionApi": {
+            "id": "CXWXKNdtENqrSlDX",
+            "name": "Evolution account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          368,
+          2000
+        ],
+        "id": "ea49685a-5f55-4273-83d0-e7e59be83c4c",
+        "name": "OpenAI Chat Model2",
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "retrieve-as-tool",
+          "toolDescription": "Utilize esta ferramenta sempre que a Luciana ou Rogerio fizerem perguntas que exijam fatos específicos sobre a vida do casal, logística familiar ou orientações de vida. Ela contém: 1. Informações logísticas (endereços, histórico médico,…). 2. Preferências pessoais, gostos,. 3. Base de Conhecimento Filosófico e Psicológico e visões de mundo do Rogério. Consulte esta base para garantir que a resposta seja baseada na realidade e nos valores do Rogério, e não em alucinações da IA.",
+          "tableName": {
+            "__rl": true,
+            "value": "informacoes_luciana",
+            "mode": "list",
+            "cachedResultName": "informacoes_luciana"
+          },
+          "topK": 20,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+        "typeVersion": 1.3,
+        "position": [
+          688,
+          2000
+        ],
+        "id": "9bae09b5-c082-4e84-98e2-97816690dd66",
+        "name": "Supabase Vector Store1",
+        "credentials": {
+          "supabaseApi": {
+            "id": "cb2uMVlkgCkdxLxh",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "text-embedding-3-large",
+          "options": {
+            "dimensions": 1536
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          688,
+          2208
+        ],
+        "id": "9313149d-2383-4a85-946d-675842a0f16c",
+        "name": "Embeddings OpenAI2",
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Webhook').item.json.body.data.message.imageMessage.caption }} ",
+                      "rightValue": "=guarda or salva or armazena or registra or arquiva",
+                      "operator": {
+                        "type": "string",
+                        "operation": "contains"
+                      },
+                      "id": "93d44fd2-5e4c-42e2-b635-d3f03058b007"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "97888dec-eaf5-47a5-b80f-d58541e77bb9",
+                      "leftValue": "",
+                      "rightValue": "",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          2400,
+          752
+        ],
+        "id": "27ec441b-e4a4-4633-8940-3fec15157be2",
+        "name": "Armazenar ou Conversar"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "48af2dcc-4ce9-45fc-abfc-54f803930092",
+                "name": "text",
+                "type": "string",
+                "value": "=Descrição da imagem do usuário: {{ $json.content }}\n\nlegenda da imagem do usuário: {{ $('Webhook').item.json.body.data.message.imageMessage.caption }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "a7a82b6a-a57b-437d-8061-27bcf0aec41f",
+        "name": "Map image prompt1",
+        "type": "n8n-nodes-base.set",
+        "position": [
+          2720,
+          320
+        ],
+        "typeVersion": 3.4
+      },
+      {
+        "parameters": {
+          "resource": "image",
+          "operation": "analyze",
+          "modelId": {
+            "__rl": true,
+            "value": "gpt-4o",
+            "mode": "list",
+            "cachedResultName": "GPT-4O"
+          },
+          "text": "o que tem nessa imagem?",
+          "inputType": "base64",
+          "options": {}
+        },
+        "id": "915d6030-c9a6-4140-b502-7bfc0e53959e",
+        "name": "Analyze image1",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "position": [
+          2160,
+          384
+        ],
+        "typeVersion": 1.8,
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Webhook').item.json.body.data.message.imageMessage.caption }} ",
+                      "rightValue": "=guarda or salva or armazena or registra or arquiva",
+                      "operator": {
+                        "type": "string",
+                        "operation": "contains"
+                      },
+                      "id": "93d44fd2-5e4c-42e2-b635-d3f03058b007"
+                    }
+                  ],
+                  "combinator": "or"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "97888dec-eaf5-47a5-b80f-d58541e77bb9",
+                      "leftValue": "",
+                      "rightValue": "",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "or"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          2416,
+          256
+        ],
+        "id": "6f42f02c-a6ad-4a20-a49f-0d765c3d8468",
+        "name": "Armazenar ou Conversar1"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Webhook').item.json.body.data.message.imageMessage.caption }} ",
+                      "rightValue": "=guarda or salva or armazena or registra or arquiva",
+                      "operator": {
+                        "type": "string",
+                        "operation": "contains"
+                      },
+                      "id": "93d44fd2-5e4c-42e2-b635-d3f03058b007"
+                    }
+                  ],
+                  "combinator": "or"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "97888dec-eaf5-47a5-b80f-d58541e77bb9",
+                      "leftValue": "",
+                      "rightValue": "",
+                      "operator": {
+                        "type": "string",
+                        "operation": "contains"
+                      }
+                    }
+                  ],
+                  "combinator": "or"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          2752,
+          -448
+        ],
+        "id": "9b3803bc-92c8-4f45-89cb-f4d9743341f7",
+        "name": "Armazenar ou Conversar2"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://rogerioalmeidaestudos-evolution-api.dhb9ce.easypanel.host/chat/getBase64FromMediaMessage/rogerioalmeida",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "message",
+                "value": "={{ $json.body.data }}"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "json"
+              }
+            }
+          }
+        },
+        "id": "b3a88830-bca9-4a5f-83f9-8f89b3f30622",
+        "name": "Download audio",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          -720,
+          2272
+        ],
+        "typeVersion": 4.2,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "WBgHiHlVRQYKakw6",
+            "name": "Header Auth account 2"
+          },
+          "evolutionApi": {
+            "id": "XgBR3tcQjMYR0Aso",
+            "name": "Evolution account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Captura a string base64\nlet base64String = $input.item.json.base64;\n\n// 2. Limpeza de segurança: Se a string vier com o prefixo \"data:audio/...\", nós o removemos\nif (base64String.includes(',')) {\n  base64String = base64String.split(',')[1];\n}\n\nreturn {\n  json: $input.item.json,\n  binary: {\n    data: { // Este nome 'data' deve ser o mesmo que você colocou no campo \"Input Data Field\" do nó OpenAI\n      data: base64String,\n      mimeType: 'audio/ogg', \n      fileName: 'audio.ogg', // A extensão .ogg é vital para o Whisper\n    }\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -416,
+          2256
+        ],
+        "id": "b0022c99-d3b5-432c-b4d9-97360ca5c54a",
+        "name": "Code in JavaScript1"
+      },
+      {
+        "parameters": {
+          "resource": "audio",
+          "operation": "transcribe",
+          "options": {
+            "language": "pt"
+          }
+        },
+        "id": "437394c8-bd57-44cb-a5e1-5042b54de15a",
+        "name": "Transcribe a record",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "position": [
+          -128,
+          2256
+        ],
+        "typeVersion": 1.8,
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://rogerioalmeidaestudos-evolution-api.dhb9ce.easypanel.host/chat/getBase64FromMediaMessage/rogerioalmeida",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "message",
+                "value": "={{ $json.body.data }}"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "json"
+              }
+            }
+          }
+        },
+        "id": "a1a05cf6-b131-42cf-8e22-f8e93f21ccfa",
+        "name": "Download documento",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          -704,
+          2576
+        ],
+        "typeVersion": 4.2,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "WBgHiHlVRQYKakw6",
+            "name": "Header Auth account 2"
+          },
+          "evolutionApi": {
+            "id": "XgBR3tcQjMYR0Aso",
+            "name": "Evolution account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Captura a string base64 que vem do JSON\nlet base64String = $input.item.json.base64;\n\n// 2. Limpeza: Remove prefixos como \"data:application/pdf;base64,\" se existirem\nif (base64String.includes(',')) {\n  base64String = base64String.split(',')[1];\n}\n\nreturn {\n  json: $input.item.json,\n  binary: {\n    data: { // Certifique-se que o nó seguinte use o campo 'data'\n      data: base64String,\n      mimeType: 'application/pdf', \n      fileName: 'documento.pdf', // Extensão essencial para o sistema reconhecer como PDF\n    }\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -432,
+          2576
+        ],
+        "id": "21990f63-2a6d-41cb-88fd-df461b305c81",
+        "name": "Code in JavaScript2"
+      },
+      {
+        "parameters": {
+          "operation": "pdf",
+          "options": {}
+        },
+        "id": "0024f000-51a8-48b6-bc55-1211e1831294",
+        "name": "Extract from PDF",
+        "type": "n8n-nodes-base.extractFromFile",
+        "position": [
+          -144,
+          2576
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://rogerioalmeidaestudos-evolution-api.dhb9ce.easypanel.host/chat/getBase64FromMediaMessage/rogerioalmeida",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "message",
+                "value": "={{ $json.body.data }}"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "json"
+              }
+            }
+          }
+        },
+        "id": "db0c983a-7e21-4328-a40d-8232c3d0070f",
+        "name": "Download sticker",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          -720,
+          1808
+        ],
+        "typeVersion": 4.2,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "WBgHiHlVRQYKakw6",
+            "name": "Header Auth account 2"
+          },
+          "evolutionApi": {
+            "id": "XgBR3tcQjMYR0Aso",
+            "name": "Evolution account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Captura a string base64\nlet base64String = $input.item.json.base64;\n\n// 2. Limpeza: Remove prefixos (ex: \"data:image/webp;base64,\") se existirem\nif (base64String && base64String.includes(',')) {\n  base64String = base64String.split(',')[1];\n}\n\nreturn {\n  json: $input.item.json,\n  binary: {\n    data: { \n      data: base64String,\n      mimeType: 'image/webp', // Stickers do WhatsApp são nativamente WebP\n      fileName: 'sticker.webp', // A extensão .webp é a correta para figurinhas\n    }\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -480,
+          1808
+        ],
+        "id": "0d81c924-e9e4-4248-8c62-f5ccb72dcbb4",
+        "name": "Code in JavaScript3"
+      },
+      {
+        "parameters": {
+          "resource": "image",
+          "operation": "analyze",
+          "modelId": {
+            "__rl": true,
+            "value": "gpt-4o",
+            "mode": "list",
+            "cachedResultName": "GPT-4O"
+          },
+          "text": "O que você vê nessa sticker?",
+          "inputType": "base64",
+          "options": {}
+        },
+        "id": "af0de198-cf04-4b77-a451-ea081bda27dd",
+        "name": "Analyze image2",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "position": [
+          -256,
+          1808
+        ],
+        "typeVersion": 1.8,
+        "credentials": {
+          "openAiApi": {
+            "id": "hvzm5ScmaRYXQxO7",
+            "name": "OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "48af2dcc-4ce9-45fc-abfc-54f803930092",
+                "name": "text",
+                "type": "string",
+                "value": "=Descrição da imagem do usuário: {{ $json.content }}\n"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "0d053acf-c7e5-43c1-9a21-9e32e6853f9f",
+        "name": "Map image prompt2",
+        "type": "n8n-nodes-base.set",
+        "position": [
+          0,
+          1792
+        ],
+        "typeVersion": 3.4
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Switch por JID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Enviar texto",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch por JID": {
+        "main": [
+          [],
+          [],
+          [
+            {
+              "node": "Dados Rogerio",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Dados Tulio",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "Dados Luciana": {
+        "main": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Dados Lis": {
+        "main": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Dados Rogerio": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Supabase Vector Store": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings OpenAI": {
+        "ai_embedding": [
+          [
+            {
+              "node": "Supabase Vector Store",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Dados Teo": {
+        "main": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "/search in Firecrawl": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Dados Tulio": {
+        "main": [
+          [
+            {
+              "node": "Filter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "alimentar_diario_de_obra": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent1": {
+        "main": [
+          [
+            {
+              "node": "Enviar texto1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory1": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings OpenAI1": {
+        "ai_embedding": [
+          []
+        ]
+      },
+      "/search in Firecrawl1": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "alimentar_diario_de_obra1": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Image": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch por JID1": {
+        "main": [
+          [
+            {
+              "node": "Download Image",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Download sticker",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Dados Luciana",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Download audio",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Download documento",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Analyze image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Analyze image": {
+        "main": [
+          [
+            {
+              "node": "Map image prompt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract from File": {
+        "main": [
+          []
+        ]
+      },
+      "Map image prompt": {
+        "main": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent2": {
+        "main": [
+          [
+            {
+              "node": "Enviar texto2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory2": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model2": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Supabase Vector Store1": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings OpenAI2": {
+        "ai_embedding": [
+          [
+            {
+              "node": "Supabase Vector Store1",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Armazenar ou Conversar": {
+        "main": [
+          [],
+          []
+        ]
+      },
+      "Analyze image1": {
+        "main": [
+          [
+            {
+              "node": "Armazenar ou Conversar1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Armazenar ou Conversar1": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Map image prompt1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download audio": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript1": {
+        "main": [
+          [
+            {
+              "node": "Transcribe a record",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Transcribe a record": {
+        "main": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download documento": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript2": {
+        "main": [
+          [
+            {
+              "node": "Extract from PDF",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract from PDF": {
+        "main": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download sticker": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript3": {
+        "main": [
+          [
+            {
+              "node": "Analyze image2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Analyze image2": {
+        "main": [
+          [
+            {
+              "node": "Map image prompt2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Map image prompt2": {
+        "main": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Rogerio rgapxo@gmail.com",
+    "name": "Version 446be3bf",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-04-30T13:27:18.748Z",
+      "createdAt": "2026-04-30T13:27:18.748Z",
+      "id": "6hICcxiCVgX283DX",
+      "name": "30Abril2026"
+    }
+  ]
+}
