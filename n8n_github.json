@@ -1,0 +1,317 @@
+{
+  "updatedAt": "2026-04-30T13:59:50.491Z",
+  "createdAt": "2026-04-30T13:24:42.283Z",
+  "id": "bQuJeGPDSVjP45hy",
+  "name": "n8n github",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "filters": {},
+        "requestOptions": {}
+      },
+      "id": "685c3359-37a0-4b52-a746-7dcc02401541",
+      "name": "Get All Workflows",
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        -80
+      ],
+      "credentials": {
+        "n8nApi": {
+          "id": "SwEhN9i7XImQaTrI",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all workflows fetched from the previous node\nconst allWorkflows = $input.all().map(item => item.json);\n\n// Get the ID of THIS workflow (the one running right now)\nconst currentId = $workflow.id;\n\n// Find this workflow in the list to determine its Tags (Folders)\nconst currentWorkflow = allWorkflows.find(w => w.id === currentId);\n\n// Extract Tag IDs. If the workflow is in 'Personal/Guilherme', it has a tag ID for that.\nconst targetTagIds = currentWorkflow && currentWorkflow.tags ? currentWorkflow.tags.map(t => t.id) : [];\n\n// Filter: Keep only workflows that share at least one tag with this workflow\nconst filteredWorkflows = allWorkflows.filter(w => {\n  // If current workflow has no tags, safety check: return false (or change to return true to backup all)\n  if (targetTagIds.length === 0) return false;\n\n  // Check if the other workflow has tags and if any match our target tags\n  return w.tags && w.tags.some(t => targetTagIds.includes(t.id));\n});\n\n// Format the data for GitHub\nreturn filteredWorkflows.map(workflow => {\n  const cleanName = workflow.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();\n  \n  return {\n    json: {\n      id: workflow.id,\n      name: workflow.name,\n      fileName: `${cleanName}.json`,\n      content: JSON.stringify(workflow, null, 2)\n    }\n  };\n});"
+      },
+      "id": "9ad502d8-b844-45cc-a03e-b5a529373f6b",
+      "name": "Format Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "value": "rgapxo",
+          "mode": ""
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-workflows",
+          "mode": ""
+        },
+        "filePath": "={{ $('Format Data').item.json.fileName }}",
+        "additionalParameters": {}
+      },
+      "id": "305d62fd-5aec-45aa-b1ef-4fc02a3e38e2",
+      "name": "Check if Exists",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        -64
+      ],
+      "alwaysOutputData": true,
+      "webhookId": "0a3eb1b5-33a0-4d18-9c81-f8d289f66ba6",
+      "credentials": {
+        "githubApi": {
+          "id": "N7AOTfBGxtI6U4dE",
+          "name": "GitHub account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "rgapxo",
+          "mode": ""
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-workflows",
+          "mode": ""
+        },
+        "filePath": "={{ $('Format Data').item.json.fileName }}",
+        "fileContent": "={{ $('Format Data').item.json.content }}",
+        "commitMessage": "={{ 'Update: ' + $('Format Data').item.json.name }}"
+      },
+      "id": "ea65fc90-c972-4745-bd15-274d133ed8f6",
+      "name": "GitHub Edit",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -288
+      ],
+      "webhookId": "afc9b617-984e-4109-9650-18a496227ffa",
+      "credentials": {
+        "githubApi": {
+          "id": "N7AOTfBGxtI6U4dE",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "rgapxo",
+          "mode": ""
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-workflows",
+          "mode": ""
+        },
+        "filePath": "={{ $('Format Data').item.json.fileName }}",
+        "fileContent": "={{ $('Format Data').item.json.content }}",
+        "commitMessage": "={{ 'Create: ' + $('Format Data').item.json.name }}"
+      },
+      "id": "39dd0719-d516-4feb-b918-2e5ed501fb4e",
+      "name": "GitHub Create",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        256,
+        48
+      ],
+      "webhookId": "6427f8ee-e34e-4d43-94ad-7ac3ba6172c3",
+      "credentials": {
+        "githubApi": {
+          "id": "N7AOTfBGxtI6U4dE",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.id }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "1c8176f9-6f42-4410-b757-eecef9e88968",
+      "name": "Exists?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "41c46888-8d5b-4deb-9f17-bbae4b669691",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -608,
+        -80
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1216,
+        -80
+      ],
+      "id": "fd92e413-24d4-4554-b658-423dd7eefe51",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "connections": {
+    "Get All Workflows": {
+      "main": [
+        [
+          {
+            "node": "Format Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Data": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Exists": {
+      "main": [
+        [
+          {
+            "node": "Exists?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub Edit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub Create": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exists?1": {
+      "main": [
+        [
+          {
+            "node": "GitHub Edit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GitHub Create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Check if Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get All Workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "d7accca1-2704-422e-83c6-437e4e9a4e16",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-30T13:24:42.283Z",
+      "createdAt": "2026-04-30T13:24:42.283Z",
+      "role": "workflow:owner",
+      "workflowId": "bQuJeGPDSVjP45hy",
+      "projectId": "S9LqWfCzitbCNHAv"
+    }
+  ],
+  "activeVersion": null,
+  "tags": [
+    {
+      "updatedAt": "2026-04-30T13:27:18.748Z",
+      "createdAt": "2026-04-30T13:27:18.748Z",
+      "id": "6hICcxiCVgX283DX",
+      "name": "30Abril2026"
+    }
+  ]
+}
