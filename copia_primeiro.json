@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-30T13:29:25.777Z",
+  "updatedAt": "2026-04-30T14:01:42.988Z",
   "createdAt": "2026-03-17T11:50:15.981Z",
   "id": "P7NKtXZUFNf5TOM3",
   "name": "copia primeiro",
@@ -2010,13 +2010,7 @@
     },
     "Switch por JID1": {
       "main": [
-        [
-          {
-            "node": "Download Image",
-            "type": "main",
-            "index": 0
-          }
-        ],
+        [],
         [
           {
             "node": "Download sticker",
@@ -3052,8 +3046,8 @@
       }
     ]
   },
-  "versionId": "446be3bf-bf27-4df1-a702-810cbdcaedf5",
-  "activeVersionId": "446be3bf-bf27-4df1-a702-810cbdcaedf5",
+  "versionId": "bb683469-473b-4c8f-9b82-154e85d7c501",
+  "activeVersionId": "bb683469-473b-4c8f-9b82-154e85d7c501",
   "triggerCount": 1,
   "shared": [
     {
@@ -3065,9 +3059,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-04-30T12:58:40.970Z",
-    "createdAt": "2026-04-30T12:49:39.137Z",
-    "versionId": "446be3bf-bf27-4df1-a702-810cbdcaedf5",
+    "updatedAt": "2026-04-30T14:01:47.231Z",
+    "createdAt": "2026-04-30T14:01:42.990Z",
+    "versionId": "bb683469-473b-4c8f-9b82-154e85d7c501",
     "workflowId": "P7NKtXZUFNf5TOM3",
     "nodes": [
       {
@@ -5074,13 +5068,7 @@
       },
       "Switch por JID1": {
         "main": [
-          [
-            {
-              "node": "Download Image",
-              "type": "main",
-              "index": 0
-            }
-          ],
+          [],
           [
             {
               "node": "Download sticker",
@@ -5345,7 +5333,7 @@
       }
     },
     "authors": "Rogerio rgapxo@gmail.com",
-    "name": "Version 446be3bf",
+    "name": "Version bb683469",
     "description": "",
     "autosaved": true
   },
